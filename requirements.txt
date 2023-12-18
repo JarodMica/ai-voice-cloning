@@ -1,0 +1,18 @@
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch>=2.1.0
+torchvision
+torchaudio
+
+openai-whisper
+more-itertools
+ffmpeg-python
+gradio<=3.23.0
+music-tag
+voicefixer
+psutil
+phonemizer
+pydantic==1.10.11
+websockets
+beartype==0.15.0
+pykakasi
+rotary-embedding-torch==0.4.0
