@@ -1,6 +1,6 @@
-[submodule "tortoise-tts"]
+[submodule "modules/tortoise-tts"]
 	path = modules/tortoise-tts
 	url = https://github.com/JarodMica/tortoise-tts.git
-[submodule "dlas"]
+[submodule "modules/dlas"]
 	path = modules/dlas
 	url = https://github.com/JarodMica/DL-Art-School.git
