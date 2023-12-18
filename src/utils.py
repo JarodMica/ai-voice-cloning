@@ -3724,8 +3724,12 @@ def unload_tts():
 	do_gc()
 
 def reload_tts():
-	unload_tts()
-	load_tts()
+	subprocess.Popen(["start.bat"])
+	with open("reload_flag.txt", "w") as f:
+		f.write("reload")
+	os.kill(os.getpid(), signal.SIGTERM)  # Or signal.SIGKILL for an even harder kill
+	# unload_tts()
+	# load_tts()
 
 def get_current_voice():
 	global current_voice
