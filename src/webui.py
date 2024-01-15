@@ -24,11 +24,24 @@ from utils import *
 args = setup_args()
 
 GENERATE_SETTINGS = {}
+RVC_SETTINGS = {
+    'rvc_model': '',
+    'f0_up_key': 0,
+    'file_index': '',
+	'index_rate' : 0,
+    'filter_radius': 3,
+    'resample_sr': 48000,
+    'rms_mix_rate': 0.25,
+    'protect': 0.33,
+}
 TRANSCRIBE_SETTINGS = {}
 EXEC_SETTINGS = {}
 TRAINING_SETTINGS = {}
 MERGER_SETTINGS = {}
 GENERATE_SETTINGS_ARGS = []
+
+
+
 
 PRESETS = {
 	'Ultra Fast': {'num_autoregressive_samples': 16, 'diffusion_iterations': 30, 'cond_free': False},
@@ -54,6 +67,55 @@ HISTORY_HEADERS = {
 	"Model": "model",
 	"Model Hash": "model_hash",
 }
+
+# Load settings from a file if it exists
+def load_rvc_settings():
+	global RVC_SETTINGS
+	try:
+		if os.path.exists('./config/rvc.json'):
+			with open('./config/rvc.json', 'r') as f:
+				RVC_SETTINGS.update(json.load(f))
+	except:
+		pass
+
+def update_rvc_settings(**kwargs):
+    global RVC_SETTINGS
+    RVC_SETTINGS.update(kwargs)
+    save_rvc_settings()
+
+def save_rvc_settings():
+    global RVC_SETTINGS
+    os.makedirs('./config/', exist_ok=True)
+    with open(f'./config/rvc.json', 'w', encoding="utf-8") as f:
+        f.write(json.dumps(RVC_SETTINGS, indent='\t'))
+
+def save_rvc_settings_to_json():
+    # Hardcoded path to the JSON file
+    config_file = 'config\\rvc.json'
+
+    try:
+        # Try to load the existing JSON data from the file
+        with open(config_file, 'r') as json_file:
+            existing_settings = json.load(json_file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        # If the file doesn't exist or is unreadable, create a new dictionary
+        existing_settings = {}
+
+    # Update the existing settings with the new values from RVC_SETTINGS
+    for key, value in RVC_SETTINGS.items():
+        # Check if the value is a Gradio Slider object
+        if isinstance(value, gr.Slider):
+            # Extract the value from the Slider
+            existing_settings[key] = value.value
+        elif isinstance(value, gr.Dropdown):
+            # Extract the selected value from the Dropdown
+            existing_settings[key] = value.value
+        else:
+            existing_settings[key] = value
+
+    # Save the updated settings back to the JSON file
+    with open(config_file, 'w') as json_file:
+        json.dump(existing_settings, json_file, indent=4)
 
 # can't use *args OR **kwargs if I want to retain the ability to use progress
 def generate_proxy(
@@ -83,7 +145,7 @@ def generate_proxy(
 	progress=gr.Progress(track_tqdm=True)
 ):
 	kwargs = locals()
-
+	# save_rvc_settings_to_json()
 	try:
 		sample, outputs, stats = generate(**kwargs)
 	except Exception as e:
@@ -261,6 +323,15 @@ def update_args_proxy( *args ):
 		kwargs[k] = v
 
 	update_args(**kwargs)
+
+def update_rvc_settings_proxy(*args):
+    kwargs = {}
+    keys = list(RVC_SETTINGS.keys())
+    for i, key in enumerate(keys):
+        kwargs[key] = args[i]
+
+    update_rvc_settings(**kwargs)
+
 def optimize_training_settings_proxy( *args ):
 	kwargs = {}
 	keys = list(TRAINING_SETTINGS.keys())
@@ -327,6 +398,8 @@ def update_voices():
 		gr.Dropdown.update(choices=get_voice_list(append_defaults=True)),
 		gr.Dropdown.update(choices=get_voice_list()),
 		gr.Dropdown.update(choices=get_voice_list(args.results_folder)),
+		gr.Dropdown.update(choices=get_rvc_models()),  # Update for RVC models
+		gr.Dropdown.update(choices=get_rvc_indexes())  # Update for RVC models
 	)
 
 def history_copy_settings( voice, file ):
@@ -364,6 +437,8 @@ def setup_gradio():
 
 	dataset_list = get_dataset_list()
 	training_list = get_training_list()
+
+	load_rvc_settings()
 
 	global GENERATE_SETTINGS_ARGS
 	GENERATE_SETTINGS_ARGS = list(inspect.signature(generate_proxy).parameters.keys())[:-1]
@@ -424,6 +499,20 @@ def setup_gradio():
 						["P", "DDIM"], # + ["K_Euler_A", "DPM++2M"],
 						value="DDIM", label="Diffusion Samplers", type="value"
 					)
+
+					EXEC_SETTINGS['use_rvc'] = gr.Checkbox(label="Run the outputted audio through RVC", value=args.use_rvc)
+					with gr.Column(visible=args.use_rvc) as rvc_column:
+						RVC_SETTINGS['rvc_model'] = gr.Dropdown(choices=get_rvc_models(), label="RVC Voice Model", value=RVC_SETTINGS['rvc_model'], interactive=True)
+						RVC_SETTINGS['file_index'] = gr.Dropdown(choices=get_rvc_indexes(), label="RVC Index File", value=RVC_SETTINGS["file_index"], interactive=True)
+						RVC_SETTINGS['index_rate'] = gr.Slider(minimum=0, maximum=1, label="Index Rate", value=RVC_SETTINGS["index_rate"], interactive=True)
+						RVC_SETTINGS['f0_up_key'] = gr.Slider(minimum=-24, maximum=24, label="Voice Pitch (f0 key)", value=RVC_SETTINGS["f0_up_key"], interactive=True)
+						# RVC_SETTINGS['f0_method'] = gr.Dropdown(choices=get_rvc_models(), label="RVC Voice Model", value=args.rvc_model)
+						RVC_SETTINGS['filter_radius'] = gr.Slider(minimum=0, maximum=7, label="Filter Radius", value=RVC_SETTINGS["filter_radius"], interactive=True)
+						RVC_SETTINGS['resample_sr'] = gr.Slider(minimum=0, maximum=48000, label="Resample sample rate", value=RVC_SETTINGS["resample_sr"], interactive=True)
+						RVC_SETTINGS['rms_mix_rate'] = gr.Slider(minimum=0, maximum=1, label="RMS Mix Rate (Volume Envelope)", value=RVC_SETTINGS["rms_mix_rate"], interactive=True)
+						RVC_SETTINGS['protect'] = gr.Slider(minimum=0, maximum=0.5, label="Protect Voiceless Consonants", value=RVC_SETTINGS["protect"], interactive=True)
+
+
 					GENERATE_SETTINGS["cvvp_weight"] = gr.Slider(value=0, minimum=0, maximum=1, label="CVVP Weight")
 					GENERATE_SETTINGS["top_p"] = gr.Slider(value=0.8, minimum=0, maximum=1, label="Top P")
 					GENERATE_SETTINGS["diffusion_temperature"] = gr.Slider(value=1.0, minimum=0, maximum=1, label="Diffusion Temperature")
@@ -719,6 +808,18 @@ def setup_gradio():
 				exec_inputs = list(EXEC_SETTINGS.values())
 				for k in EXEC_SETTINGS:
 					EXEC_SETTINGS[k].change( fn=update_args_proxy, inputs=exec_inputs )
+
+				rvc_inputs = list(RVC_SETTINGS.values())
+				# for k in RVC_SETTINGS:
+				# 	RVC_SETTINGS[k].change(fn=update_rvc_settings_proxy, inputs=rvc_inputs)
+
+				for k, component in RVC_SETTINGS.items():
+					if isinstance(component, gr.Dropdown):
+						component.change(fn=update_rvc_settings_proxy, inputs=rvc_inputs)
+					elif isinstance(component, gr.Slider):
+						component.release(fn=update_rvc_settings_proxy, inputs=rvc_inputs)
+
+
 				
 				EXEC_SETTINGS['autoregressive_model'].change(
 					fn=update_autoregressive_model,
@@ -773,6 +874,13 @@ def setup_gradio():
 			inputs=show_experimental_settings,
 			outputs=experimental_column
 		)
+
+		EXEC_SETTINGS['use_rvc'].change(
+			fn=lambda use_rvc_checked: gr.update(visible=use_rvc_checked),
+			inputs=EXEC_SETTINGS['use_rvc'],
+			outputs=rvc_column
+		)
+
 		if preset:
 			preset.change(fn=update_presets,
 				inputs=preset,
@@ -807,11 +915,17 @@ def setup_gradio():
 			outputs=[
 				GENERATE_SETTINGS['voice'],
 				DATASET_SETTINGS['voice'],
-				history_voices
+				history_voices,
+				RVC_SETTINGS['rvc_model'],  # Add this line
+				RVC_SETTINGS['file_index']
+
 			]
 		)
 
 		generate_settings = list(GENERATE_SETTINGS.values())
+		rvc_settings = list(RVC_SETTINGS.values())
+		print(generate_settings)
+		print(rvc_settings)
 		submit.click(
 			lambda: (gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)),
 			outputs=[source_sample, candidates_list, generation_results],

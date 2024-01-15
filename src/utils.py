@@ -42,11 +42,11 @@ from tortoise.api_fast import TextToSpeech as Toroise_TTS_Hifi
 from tortoise.utils.audio import load_audio, load_voice, load_voices, get_voice_dir, get_voices
 from tortoise.utils.text import split_and_recombine_text
 from tortoise.utils.device import get_device_name, set_device_name, get_device_count, get_device_vram, get_device_batch_size, do_gc
-
+from rvc_pipe.rvc_infer import rvc_convert
 
 MODELS['dvae.pth'] = "https://huggingface.co/jbetker/tortoise-tts-v2/resolve/3704aea61678e7e468a06d8eea121dba368a798e/.models/dvae.pth"
 
-WHISPER_MODELS = ["tiny", "base", "small", "medium", "large", "large-v1", "large-v2"]
+WHISPER_MODELS = ["tiny", "base", "small", "medium", "large", "large-v1", "large-v2", "large-v3"]
 WHISPER_SPECIALIZED_MODELS = ["tiny.en", "base.en", "small.en", "medium.en"]
 WHISPER_BACKENDS = ["openai/whisper", "lightmare/whispercpp", "m-bain/whisperx"]
 VOCODERS = ['univnet', 'bigvgan_base_24khz_100band', 'bigvgan_24khz_100band']
@@ -1236,7 +1236,8 @@ def generate_tortoise(**kwargs):
 				parameters['seed'] = additionals[0]
 		except Exception as e:
 			raise RuntimeError(f'Possible latent mismatch: click the "(Re)Compute Voice Latents" button and then try again. Error: {e}')
-		
+		# print(type(gen))
+		# print(gen)
 		run_time = time.time()-start_time
 		print(f"Generating line took {run_time} seconds")
 
@@ -1358,6 +1359,32 @@ def generate_tortoise(**kwargs):
 		sample_voice = (tts.input_sample_rate, sample_voice.numpy())
 
 	info = get_info(voice=voice, latents=False)
+
+	#insert rvc stuff
+	if args.use_rvc:
+		rvc_settings = load_rvc_settings()
+		rvc_model_path = os.path.join("models", "rvc_models", rvc_settings['rvc_model'])
+		rvc_index_path = os.path.join("models", "rvc_models", rvc_settings['file_index'])
+		print (rvc_model_path)
+		rvc_out_path = rvc_convert(model_path=rvc_model_path, 
+							 		input_path=output_voices[0],
+									f0_up_key=rvc_settings['f0_up_key'],
+									file_index=rvc_index_path,
+									index_rate=rvc_settings['index_rate'],
+									filter_radius=rvc_settings['filter_radius'],
+									resample_sr=rvc_settings['resample_sr'],
+									rms_mix_rate=rvc_settings['rms_mix_rate'],
+									protect=rvc_settings['protect'])
+		
+		# Read the contents from rvc_out_path
+		with open(rvc_out_path, 'rb') as file:
+			content = file.read()
+
+		# Write the contents to output_voices[0], effectively replacing its contents
+		with open(output_voices[0], 'wb') as file:
+			file.write(content)
+
+
 	print(f"Generation took {info['time']} seconds, saved to '{output_voices[0]}'\n")
 
 	info['seed'] = usedSeed
@@ -3307,7 +3334,11 @@ def setup_args(cli=False):
 		'latents-lean-and-mean': True,
 		'voice-fixer': False, # getting tired of long initialization times in a Colab for downloading a large dataset for it
 		'use-deepspeed': False,
+		#stuff that jarod has added
 		'use-hifigan': False,
+		'use-rvc' : False,
+		'rvc-model' : None,
+
 		'voice-fixer-use-cuda': True,
 
 		
@@ -3368,6 +3399,18 @@ def setup_args(cli=False):
 	parser.add_argument("--voice-fixer-use-cuda", action='store_true', default=default_arguments['voice-fixer-use-cuda'], help="Hints to voicefixer to use CUDA, if available.")
 	parser.add_argument("--use-deepspeed", action='store_true', default=default_arguments['use-deepspeed'], help="Use deepspeed for speed bump.")
 	parser.add_argument("--use-hifigan", action='store_true', default=default_arguments['use-hifigan'], help="Use Hifigan instead of Diffusion")
+	parser.add_argument("--use-rvc", action='store_true', default=default_arguments['use-rvc'], help="Run the outputted audio thorugh RVC")
+	parser.add_argument("--rvc-model", action='store_true', default=default_arguments['rvc-model'], help="Specifies RVC model to use")
+
+	# parser.add_argument("--f0_up_key", action='store_true', default=default_arguments['f0_up_key'], help="transpose of the audio file, changes pitch (positive makes voice higher pitch)")
+	# parser.add_argument("--f0method", action='store_true', default=default_arguments['f0method'], help="picks which f0 method to use: dio, harvest, crepe, rmvpe (requires rmvpe.pt)")
+	# parser.add_argument("--file_index", action='store_true', default=default_arguments['file_index'], help="path to file_index, defaults to None")
+	# parser.add_argument("--index_rate", action='store_true', default=default_arguments['index_rate'], help="strength of the index file if provided")
+	# parser.add_argument("--filter_radius", action='store_true', default=default_arguments['filter_radius'], help="if >=3: apply median filtering to the harvested pitch results. The value represents the filter radius and can reduce breathiness.")
+	# parser.add_argument("--resample_sr", action='store_true', default=default_arguments['resample_sr'], help="quality at which to resample audio to, defaults to no resample")
+	# parser.add_argument("--rms_mix_rate", action='store_true', default=default_arguments['rms_mix_rate'], help="adjust the volume envelope scaling. Closer to 0, the more it mimicks the volume of the original vocals. Can help mask noise and make volume sound more natural when set relatively low. Closer to 1 will be more of a consistently loud volume")
+	# parser.add_argument("--protect", action='store_true', default=default_arguments['protect'], help="protect voiceless consonants and breath sounds to prevent artifacts such as tearing in electronic music. Set to 0.5 to disable. Decrease the value to increase protection, but it may reduce indexing accuracy")
+	
 
 	parser.add_argument("--force-cpu-for-conditioning-latents", default=default_arguments['force-cpu-for-conditioning-latents'], action='store_true', help="Forces computing conditional latents to be done on the CPU (if you constantyl OOM on low chunk counts)")
 	parser.add_argument("--defer-tts-load", default=default_arguments['defer-tts-load'], action='store_true', help="Defers loading TTS model")
@@ -3455,6 +3498,8 @@ def get_default_settings( hypenated=True ):
 		'voice-fixer': args.voice_fixer,
 		'use-deepspeed': args.use_deepspeed,
 		'use-hifigan': args.use_hifigan,
+		'use-rvc': args.use_rvc,
+		'rvc-model' : args.rvc_model,
 		'voice-fixer-use-cuda': args.voice_fixer_use_cuda,
 		'concurrency-count': args.concurrency_count,
 		'output-sample-rate': args.output_sample_rate,
@@ -3510,6 +3555,8 @@ def update_args( **kwargs ):
 	args.voice_fixer_use_cuda = settings['voice_fixer_use_cuda']
 	args.use_deepspeed = settings['use_deepspeed']
 	args.use_hifigan = settings['use_hifigan']
+	args.use_rvc = settings['use_rvc']
+	args.rvc_model = settings['rvc_model']
 	args.concurrency_count = settings['concurrency_count']
 	args.output_sample_rate = 44000
 	args.autocalculate_voice_chunk_duration_size = settings['autocalculate_voice_chunk_duration_size']
@@ -4017,3 +4064,20 @@ def merge_models( primary_model_name, secondary_model_name, alpha, progress=gr.P
 	message = f"Saved to {output_path}"
 	print(message)
 	return message
+
+
+#Stuff added by Jarod
+def get_rvc_models():
+	folder_path = 'models/rvc_models'
+	return [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f)) and f.endswith('.pth')]
+def get_rvc_indexes():
+	folder_path = 'models/rvc_models'
+	return [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f)) and f.endswith('.index')]
+
+def load_rvc_settings():
+    rvc_settings_path = './config/rvc.json'
+    if os.path.exists(rvc_settings_path):
+        with open(rvc_settings_path, 'r') as file:
+            return json.load(file)
+    else:
+        return {}  # Return an empty dict if the file doesn't exist

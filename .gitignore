@@ -3,6 +3,8 @@
 /models/*
 /training/*
 /config/*
+output/
+*.wav
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
