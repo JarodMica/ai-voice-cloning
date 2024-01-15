@@ -89,33 +89,6 @@ def save_rvc_settings():
     with open(f'./config/rvc.json', 'w', encoding="utf-8") as f:
         f.write(json.dumps(RVC_SETTINGS, indent='\t'))
 
-def save_rvc_settings_to_json():
-    # Hardcoded path to the JSON file
-    config_file = 'config\\rvc.json'
-
-    try:
-        # Try to load the existing JSON data from the file
-        with open(config_file, 'r') as json_file:
-            existing_settings = json.load(json_file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        # If the file doesn't exist or is unreadable, create a new dictionary
-        existing_settings = {}
-
-    # Update the existing settings with the new values from RVC_SETTINGS
-    for key, value in RVC_SETTINGS.items():
-        # Check if the value is a Gradio Slider object
-        if isinstance(value, gr.Slider):
-            # Extract the value from the Slider
-            existing_settings[key] = value.value
-        elif isinstance(value, gr.Dropdown):
-            # Extract the selected value from the Dropdown
-            existing_settings[key] = value.value
-        else:
-            existing_settings[key] = value
-
-    # Save the updated settings back to the JSON file
-    with open(config_file, 'w') as json_file:
-        json.dump(existing_settings, json_file, indent=4)
 
 # can't use *args OR **kwargs if I want to retain the ability to use progress
 def generate_proxy(
@@ -145,7 +118,7 @@ def generate_proxy(
 	progress=gr.Progress(track_tqdm=True)
 ):
 	kwargs = locals()
-	# save_rvc_settings_to_json()
+	
 	try:
 		sample, outputs, stats = generate(**kwargs)
 	except Exception as e:
