@@ -1,5 +1,7 @@
 #!/bin/bash
 # get local dependencies
+set -e # Stop running when an error happens
+
 git submodule init
 git submodule update --remote
 # setup venv

@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e # stop on error
+
 source ./venv/bin/activate
 # swap to ROCm version of BitsAndBytes
 pip3 uninstall -y bitsandbytes

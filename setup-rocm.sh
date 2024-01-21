@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e # Stop on error
 # get local dependencies
 git submodule init
 git submodule update --remote
