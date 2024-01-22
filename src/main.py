@@ -1,4 +1,13 @@
 import os
+import sys
+
+if os.path.exists("runtime"):
+	# Get the directory where the script is located
+	script_dir = os.path.dirname(os.path.abspath(__file__))
+
+	# Add this directory to sys.path
+	if script_dir not in sys.path:
+		sys.path.insert(0, script_dir)
 
 if 'TORTOISE_MODELS_DIR' not in os.environ:
 	os.environ['TORTOISE_MODELS_DIR'] = os.path.realpath(os.path.join(os.getcwd(), './models/tortoise/'))
