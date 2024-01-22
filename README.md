@@ -29,9 +29,12 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 #### Troubleshooting Manual Installation
 The terminal is your friend.  Any errors or issues will pop-up in the terminal when you go to try and run, and then you can start debugging from there.
     - If somewhere in the process, torch gets messed up, you may have to reinstall it.  You will have to uninstall it, then reinstall it like the following.  Make sure to type (Y) to confirm deletion.
+
     ```
     .\venv\Scripts\activate.bat
+    
     pip uninstall torch
+
     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
     ```
 
