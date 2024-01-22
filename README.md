@@ -43,6 +43,13 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 ## Instructions
 Checkout the YouTube video: insert_link_here_later
 
+Everything is pretty much the same as before if you've used this repository in the past, however, there is a new option to convert text output using ```rvc```.  Before you can use it, you will need a **trained** RVC .pth file that you get from RVC or online, and then you will need to place it in ```models/rvc_models/```.  Both .index and .pth files can be placed in here and they'll show up correctly in their respective dropdown menus.
+
+To enable rvc: 
+1. Check and enable ```Show Experimental Settings``` to reveal more options
+2. Check and enable ```Run the outputter audio through RVC```.
+You will now have access to parameters you could adjust in RVC for the RVC voice model you're using.
+
 ## Updating Your Installation
 Below are how you can update the package for the latest updates
 
