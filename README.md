@@ -3,13 +3,13 @@
 > **Note** I do not plan on actively working on improvements/enhancements for this project, this is mainly meant to keep the repo in a working state in the case the original git.ecker goes down or necessary package changes need to be made.
 
 That being said, some enhancements added compared to the original repo:
-- :heavy_check_mark: Hifigan added, allowing for faster inference
-- :heavy_check_mark: whisper-v3 added as a chooseable option for whisperx
-- :heavy_check_mark: Output conversion using RVC 
+:heavy_check_mark: Hifigan added, allowing for faster inference at the cost of quality.  
+:heavy_check_mark: whisper-v3 added as a chooseable option for whisperx
+:heavy_check_mark: Output conversion using RVC 
 
 This is a fork of the repo originally located here: https://git.ecker.tech/mrq/ai-voice-cloning.  All of the work that was put into it to incoporate training with DLAS and inference with Tortoise belong to mrq, the author of the original ai-voice-cloning repo.  
 
-## Setup (WINDOWS + Nvidia)
+## Setup (Windows + Nvidia)
 This repo only works on **Windows with NVIDIA GPUs**.  I don't have any plans on making it compatible with other systems, but it shouldn't be too difficult to port if you have experience in coding or are an expert level ChatGPT user.  If you do successfully do this and want to share, pull requests are always welcome!
 > **Tips for developers:** setup-cuda.bat should have everything that you need for the packages to be installed.  All of the different requirements files make it quite a mess in the script, but each repo has their requirements installed, and then at the end, the requirements.txt in the root is needed to change the version *back* to compatible versions for this repo.
 
@@ -37,7 +37,7 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 4. **(Optional)** You can opt to install whisperx for training by running ```setup-whipserx.bat```
     - Check out the whisperx github page for more details, but it's much faster for longer audio files.  If you're processing one-by-one with an already split dataset, it doesn't improve speeds that much.
 
-## How to Use the Repo
+## Instructions
 Checkout the YouTube video: insert_link_here_later
 
 ## Updating Your Installation
@@ -60,7 +60,7 @@ If there are large features added, you may need to delete the venv and the re-ru
 
 ### Troubleshooting Manual Installation
 The terminal is your friend.  Any errors or issues will pop-up in the terminal when you go to try and run, and then you can start debugging from there.
-    - If somewhere in the process, torch gets messed up, you may have to reinstall it.  You will have to uninstall it, then reinstall it like the following.  Make sure to type (Y) to confirm deletion.
+- If somewhere in the process, torch gets messed up, you may have to reinstall it.  You will have to uninstall it, then reinstall it like the following.  Make sure to type (Y) to confirm deletion.
 
 ```
 .\venv\Scripts\activate.bat
