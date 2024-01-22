@@ -9,6 +9,12 @@ This repo only works on **Windows**.  I don't have any plans on making it compat
 > **If you're a developer on another system:** Look inside of setup-cuda.bat for the packages that need to be installed.  Linux should be possible, but there are things in there that you would need to adjust and change to make it linux compatible.
 
 ### Package Installation (Recommended)
+Install 7zip on your computer: https://www.7-zip.org/
+    - If you run into any extraction issues, most likely it's due to your 7zip being out-of-date OR you're using a different extractor.
+
+1. Head over to the releases tab and download the latest package on Hugging Face:
+2. Extract the 7zip archive.
+3. Open up ai-voice-cloning and then run ```start.bat```
 
 ### Manual Installation
 If you are installing this manually, you will need:
@@ -40,6 +46,9 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 Below are how you can update the package for the latest updates
 
 ### Package
+>**NOTE:** If there are major feature change, check the latest release to see if ```update_package.bat``` will work.  If NOT, you will need to re-download and re-extract the package from Hugging Face.
+1. Run the update_package.bat file
+    - It will clone the repo and will copy the src folder from the repo to the package.
 
 ### Manual Installation
 You should be able to navigate into the folder and then pull the repo to update it.
