@@ -5,6 +5,8 @@
 /config/*
 output/
 *.wav
+fairseq-0.12.2-cp39-cp39-win_amd64.whl
+rvc/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
