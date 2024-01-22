@@ -24,6 +24,7 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 3. After it finishes, run ```start.bat``` and this will start downloading most of the models you'll need.
     - Some models are downloaded when you first use them.  You'll incur additional downloads during generation and when training (for whisper).  However, once they are finished, you won't ever have to download them again as long as you don't delete them.  They are located in the ```models``` folder of the root.
 4. **(Optional)** You can opt to install whisperx for training by running ```setup-whipserx.bat```
+    - Check out the whisperx github page for more details, but it's much faster for longer audio files.  If you're processing one-by-one with an already split dataset, it doesn't improve speeds that much.
 
 #### Troubleshooting Manual Installation
 The terminal is your friend.  Any errors or issues will pop-up in the terminal when you go to try and run, and then you can start debugging from there.
