@@ -4,6 +4,14 @@ import argparse
 import yaml
 import datetime
 
+if os.path.exists("runtime"):
+	# Get the directory where the script is located
+	script_dir = os.path.dirname(os.path.abspath(__file__))
+
+	# Add this directory to sys.path
+	if script_dir not in sys.path:
+		sys.path.insert(0, script_dir)
+
 from torch.distributed.run import main as torchrun
 
 # this is effectively just copy pasted and cleaned up from the __main__ section of training.py

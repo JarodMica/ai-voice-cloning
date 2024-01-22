@@ -36,6 +36,19 @@ pip uninstall torch
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
+## Updating Your Installation
+Below are how you can update the package for the latest updates
+
+### Package
+
+### Manual Installation
+You should be able to navigate into the folder and then pull the repo to update it.
+```
+cd ai-voice-cloning
+git pull
+```
+If there are large features added, you may need to delete the venv and the re-run the setup-cuda script to make sure there are no package issues
+
 ## Documentation
 
 TBD
