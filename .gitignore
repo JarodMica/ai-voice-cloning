@@ -1,5 +1,6 @@
 # ignores user files
 /venv/
+/venv_cpu/
 /models/*
 /training/*
 /config/*
@@ -7,6 +8,7 @@ output/
 *.wav
 fairseq-0.12.2-cp39-cp39-win_amd64.whl
 rvc/
+*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

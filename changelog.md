@@ -1,5 +1,15 @@
 # Changelogs & Notes
 
+## 1/25/2024
+Started working on CPU inference capabilities.  I don't think training is even a thing on CPU so not even going to try
+- CPU enabled for inferencing, works with RVC on/off
+    - It's very slow, roughly 5-10x slower than GPU but it works
+    - Causes for this are lack of deepspeed compatibility on windows
+- Hifigan DOES NOT work with CPU inferencing ATM.  Not sure what the issue is or what is causing it, so I'm trying to figure that out
+- Currently looking to see if there are options to speed up CPU inference. 
+    - BetterTransformers via optimum - didn't notice any difference here, could be doing it wrong
+    - Deepspeed for windows - requires a linux OS to my research.  You have to do some type of intel for pytorch / deepspeed install and there are additional pieces that have wheels only built for linux.   
+
 ## 1/15/2024
 - Manual installation of this with RVC will be quite the hassle due to the assets folder, so what I'll do is put that on HF so that can be downloaded and put into the rvc folder
 
