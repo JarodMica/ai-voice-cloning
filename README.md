@@ -3,8 +3,11 @@
 > **Note** I do not plan on actively working on improvements/enhancements for this project, this is mainly meant to keep the repo in a working state in the case the original git.ecker goes down or necessary package changes need to be made.
 
 That being said, some enhancements added compared to the original repo:
+
 :heavy_check_mark: Hifigan added, allowing for faster inference at the cost of quality.  
+
 :heavy_check_mark: whisper-v3 added as a chooseable option for whisperx
+
 :heavy_check_mark: Output conversion using RVC 
 
 This is a fork of the repo originally located here: https://git.ecker.tech/mrq/ai-voice-cloning.  All of the work that was put into it to incoporate training with DLAS and inference with Tortoise belong to mrq, the author of the original ai-voice-cloning repo.  
@@ -17,7 +20,7 @@ This repo only works on **Windows with NVIDIA GPUs**.  I don't have any plans on
 Install 7zip on your computer: https://www.7-zip.org/
     - If you run into any extraction issues, most likely it's due to your 7zip being out-of-date OR you're using a different extractor.
 
-1. Head over to the releases tab and download the latest package on Hugging Face:
+1. Head over to the releases tab and download the latest package on Hugging Face: https://github.com/JarodMica/ai-voice-cloning/releases/tag/v2.0
 2. Extract the 7zip archive.
 3. Open up ai-voice-cloning and then run ```start.bat```
 
@@ -39,6 +42,13 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 
 ## Instructions
 Checkout the YouTube video: insert_link_here_later
+
+Everything is pretty much the same as before if you've used this repository in the past, however, there is a new option to convert text output using ```rvc```.  Before you can use it, you will need a **trained** RVC .pth file that you get from RVC or online, and then you will need to place it in ```models/rvc_models/```.  Both .index and .pth files can be placed in here and they'll show up correctly in their respective dropdown menus.
+
+To enable rvc: 
+1. Check and enable ```Show Experimental Settings``` to reveal more options
+2. Check and enable ```Run the outputter audio through RVC```.
+You will now have access to parameters you could adjust in RVC for the RVC voice model you're using.
 
 ## Updating Your Installation
 Below are how you can update the package for the latest updates
