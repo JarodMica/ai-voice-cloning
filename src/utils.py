@@ -60,7 +60,7 @@ LEARNING_RATE_SCHEDULE = [ 2, 4, 9, 18, 25, 33, 50 ]
 
 RESAMPLERS = {}
 
-MIN_TRAINING_DURATION = 0.6
+MIN_TRAINING_DURATION = 1.6 # Original value was 0.6
 MAX_TRAINING_DURATION = 11.6097505669
 MAX_TRAINING_CHAR_LENGTH = 200
 
@@ -2242,7 +2242,12 @@ def whisper_transcribe( file, language=None ):
 		import whisperx
 
 		device = "cuda" if get_device_name() == "cuda" else "cpu"
-		result = whisper_model.transcribe(file, batch_size=args.whisper_batchsize)
+		if language == "ja":
+			# This is to prevent whisperx from segmenting audio that is too long for tortoise to handle.  Check changelog 1/30/2024
+			chunk_size = 8
+		else:
+			chunk_size = 30
+		result = whisper_model.transcribe(file, batch_size=args.whisper_batchsize, language=language, chunk_size=chunk_size)
 			
 		align_model, metadata = whisper_align_model
 		result_aligned = whisperx.align(result["segments"], align_model, metadata, file, device, return_char_alignments=False)

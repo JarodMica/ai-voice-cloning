@@ -41,7 +41,9 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
     - Check out the whisperx github page for more details, but it's much faster for longer audio files.  If you're processing one-by-one with an already split dataset, it doesn't improve speeds that much.
 
 ## Instructions
-Checkout the YouTube video: insert_link_here_later
+Checkout the YouTube video:
+Watch First: https://www.youtube.com/watch?v=p31Ax_A5VKA&t=158s
+Watch Second (RVC update): https://www.youtube.com/watch?v=7tpWH8_S8es&t=504s
 
 Everything is pretty much the same as before if you've used this repository in the past, however, there is a new option to convert text output using ```rvc```.  Before you can use it, you will need a **trained** RVC .pth file that you get from RVC or online, and then you will need to place it in ```models/rvc_models/```.  Both .index and .pth files can be placed in here and they'll show up correctly in their respective dropdown menus.
 
