@@ -4,6 +4,8 @@
 
 That being said, some enhancements added compared to the original repo:
 
+:heavy_check_mark: Possible to train in other languages
+
 :heavy_check_mark: Hifigan added, allowing for faster inference at the cost of quality.  
 
 :heavy_check_mark: whisper-v3 added as a chooseable option for whisperx
