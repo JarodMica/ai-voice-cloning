@@ -1,5 +1,20 @@
 # Changelogs & Notes
 
+## Implementations and Ideas for Speeding up Tortoise
+GPT2:
+- https://github.com/152334H/tortoise-tts-fast/issues/3
+
+AR Quantization
+- int4? - https://github.com/neonbjb/tortoise-tts/issues/526
+- ggml - https://github.com/ggerganov/ggml/issues/59
+- TortoiseCPP https://github.com/balisujohn/tortoise.cpp
+
+
+
+## 2/11/2024
+- Allow for decimal values in the epoch text box as a bandaid to the async gradio issue, causing the training run to crash.  Not sure if it's gradio or if it's an error in the DLAS trainer, but this will need to be fixed as it's quite annoying to have to restart training over and over
+    - Only seems to happen on very BIG datasets... (JP corpus)
+
 ## 1/30/2024
 There's something that has been bugging me with whisperx and dataset curation for Japanese; that is, the whisper.json looks completely fine, yet, there are only a few lines inside of train.txt and validation.txt.  Well, looking through the dataset code, it seems that by default, the trainer skips segmentations that are longer than "MAX_TRAINING_DURATION = 11.6097505669" which is a global variable in utils.py and shorter than "MIN_TRAINING_DURATION = 0.6". 
 - Tested that this was the case by increasing it to an arbitrarily large max duration and the train.txt was filled with all the files segmented
@@ -7,8 +22,6 @@ There's something that has been bugging me with whisperx and dataset curation fo
 
 This may only be an issue with Japanese as Kanji count as a single character, yet may have a reading of 6 equivalent romaji characters
 - There is a setting in whisperx that determines this which is chunk_size ~ info can be found here https://github.com/m-bain/whisperX/pull/445
-
-
 - Fixed the line where the langauge parameter wasn't being passed to the whisperx transcribe function call, therefore, causing it to auto-deduce the lanugage instead.  
 
 ## 1/25/2024
