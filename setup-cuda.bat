@@ -75,8 +75,13 @@ if not exist "%file_name%" (
 python -m pip install .\fairseq-0.12.2-cp39-cp39-win_amd64.whl
 python -m pip install git+https://github.com/JarodMica/rvc-tts-pipeline.git@lightweight#egg=rvc_tts_pipe
 
+
+:: Install whisperx
+python -m pip install git+https://github.com/m-bain/whisperx.git
+
+
 :: Install other requirements (this is done last due to potential package conflicts)
-python -m pip install -r .\requirements.txt
+python -m pip install -r requirements.txt
 
 :: Setup BnB
 .\setup-cuda-bnb.bat
