@@ -13,5 +13,10 @@ xcopy ai-voice-cloning\modules\tortoise-tts modules\tortoise-tts /E /I /H /Y
 rmdir /s /q ai-voice-cloning
 rmdir /s /q .git
 
+@echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @echo Finished updating!
+@echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 pause
