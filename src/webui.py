@@ -313,9 +313,22 @@ def prepare_dataset_proxy(voice, language, validation_text_length, validation_au
     return "\n".join(messages)
 
 
-def transcribe_other_language_proxy(voice, language, chunk_size, continuation_directory, align):
+def transcribe_other_language_proxy(voice, language, chunk_size, continuation_directory, align, rename):
     indir = f'./training/{voice}/processed'
     dataset_dir = os.path.join(indir, "run")
+    merge_dir = os.path.join(dataset_dir, "dataset/wav_splits")
+    audio_dataset_path = os.path.join(merge_dir, 'audio')
+    train_text_path = os.path.join(dataset_dir, 'dataset/train.txt')
+    validation_text_path = os.path.join(dataset_dir, 'dataset/validation.txt')
+    voice_root_path = os.path.join ("./training", voice)
+    
+    items_to_move = [audio_dataset_path, train_text_path, validation_text_path]
+    
+    for item in items_to_move:
+        if os.path.exists(os.path.join(voice_root_path, os.path.basename(item))):
+            raise gr.Error(f"Before running this button again, please remove the following from training/{voice}:\ntrain.txt\nvalidation.txt\naudio")
+            
+    
     if continuation_directory:
         dataset_dir = f'./training/{voice}/processed/{continuation_directory}'
 
@@ -324,16 +337,25 @@ def transcribe_other_language_proxy(voice, language, chunk_size, continuation_di
         new_dataset_dir = os.path.join(indir, f"run_{current_datetime}")
         os.rename(dataset_dir, new_dataset_dir)
 
-    chosen_directory = f'./voices/{voice}'
+    chosen_directory = os.path.join("./voices", voice)
 
     process_audio_files(base_directory=dataset_dir,
                         language=language,
                         audio_dir=chosen_directory,
                         chunk_size=chunk_size,
-                        no_align=align)
-    merge_dir = os.path.join(dataset_dir, "dataset/wav_splits")
-    
+                        no_align=align,
+                        rename_files=rename)
+
     merge_segments(merge_dir)
+    
+
+    
+    for item in items_to_move:
+        if os.path.exists(os.path.join(voice_root_path, os.path.basename(item))):
+            print("Already exists")
+        else:
+            shutil.move(item, voice_root_path)
+    
     
 
 
@@ -753,6 +775,9 @@ def setup_gradio():
                         with gr.Row():
                             DATASET2_SETTINGS['align'] = gr.Checkbox(
                                 label="Disable Alignment", value=False   
+                            )
+                            DATASET2_SETTINGS['rename'] = gr.Checkbox(
+                                label="Rename Audio Files", value=True
                             )
                         transcribe2_button = gr.Button(
                             value="Transcribe and Process")
@@ -1248,7 +1273,8 @@ def setup_gradio():
                 DATASET2_SETTINGS['language'],
                 DATASET2_SETTINGS['chunk_size'],
                 DATASET2_SETTINGS['continue_directory'],
-                DATASET2_SETTINGS["align"]
+                DATASET2_SETTINGS["align"],
+                DATASET2_SETTINGS["rename"]
             ]
         )
 
