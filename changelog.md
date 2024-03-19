@@ -10,6 +10,12 @@ AR Quantization
 - TortoiseCPP https://github.com/balisujohn/tortoise.cpp
 
 
+## 3/17/2024
+- Adding in other language capability training to the repo, a few files are modifed in dlas and tortoise-tts modules for the cleaners to allow this to happen.
+- In both DLAS and Tortoise-tts, update the preprocessing text to be able to handle other languages
+- Added https://github.com/JarodMica/tortoise-dataset-tools inside of modules (will be used for other languages)
+    - In this case, made whisperx a mandatory install
+    - Adding a new tab called right now "Prepare Other Langauge" that will allows you to use the dataset tools I used for other languages
 
 ## 2/11/2024
 - Allow for decimal values in the epoch text box as a bandaid to the async gradio issue, causing the training run to crash.  Not sure if it's gradio or if it's an error in the DLAS trainer, but this will need to be fixed as it's quite annoying to have to restart training over and over

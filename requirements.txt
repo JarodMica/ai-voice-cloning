@@ -18,3 +18,4 @@ pykakasi
 rotary-embedding-torch==0.4.0
 transformers==4.19
 omegaconf<=2.1
+pysrt

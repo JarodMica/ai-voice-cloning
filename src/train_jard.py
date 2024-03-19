@@ -4,6 +4,11 @@ import argparse
 import yaml
 import datetime
 
+'''
+Note:
+This is a specific file for testing, nothing more than that for Jarod.
+'''
+
 if os.path.exists("runtime"):
 	# Get the directory where the script is located
 	script_dir = os.path.dirname(os.path.abspath(__file__))

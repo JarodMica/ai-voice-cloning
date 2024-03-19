@@ -3185,6 +3185,10 @@ def get_voice_list(dir=get_voice_dir(), append_defaults=False, extensions=["wav"
 	
 	return res
 
+
+    
+    
+
 def get_valle_models(dir="./training/"):
 	return [ f'{dir}/{d}/config.yaml' for d in os.listdir(dir) if os.path.exists(f'{dir}/{d}/config.yaml') ]
 
