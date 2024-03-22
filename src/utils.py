@@ -23,6 +23,7 @@ import yaml
 import hashlib
 import string
 import random
+import shutil
 
 from tqdm import tqdm
 import torch
@@ -1230,7 +1231,14 @@ def generate_tortoise(**kwargs):
 		print(settings)
 		try:
 			if args.use_hifigan:
-				gen = tts.tts(cut_text, **settings)
+				# Removing unused arguments when running hifigan, hf transformers doesn't like all these unused args
+				# This only happens when loading with hifigan as it doesn't load the diffusion model... bandage for now
+				unused_args = ['diffusion_temperature', 'cond_free_k', 'sample_batch_size', 'diffusion_iterations',
+							'return_deterministic_state', 'diffusion_sampler', 'breathing_room', 'half_p', 'cond_free',
+							'autoregressive_model', 'diffusion_model', 'tokenizer_json']
+				filtered_settings = {k: v for k, v in settings.items() if k not in unused_args}
+				
+				gen = tts.tts(cut_text, **filtered_settings)
 			else:
 				gen, additionals = tts.tts(cut_text, **settings )
 				parameters['seed'] = additionals[0]
@@ -4074,7 +4082,6 @@ def merge_models( primary_model_name, secondary_model_name, alpha, progress=gr.P
 	print(message)
 	return message
 
-
 #Stuff added by Jarod
 def get_rvc_models():
 	folder_path = 'models/rvc_models'
@@ -4090,3 +4097,32 @@ def load_rvc_settings():
             return json.load(file)
     else:
         return {}  # Return an empty dict if the file doesn't exist
+    
+def get_training_folder(voice) -> str:
+    '''
+    voice(str) : voice to retrieve training folder from
+    '''
+    return f"./training/{voice}"
+
+def archive_dataset(voice):
+    training_folder = get_training_folder(voice)
+    archive_root = os.path.join(training_folder,"archived_data")
+    current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    archive_folder = os.path.join(archive_root,current_datetime)
+    
+    items_to_move = ["train.txt", "validation.txt", "audio"]
+    training_folder_contents = os.listdir(training_folder)
+
+    if not any(item in training_folder_contents for item in items_to_move):
+        raise gr.Error("No files to move")
+    
+    for item in items_to_move:
+        os.makedirs(archive_folder, exist_ok=True)
+        move_item_path = os.path.join(training_folder, item)
+        if os.path.exists(move_item_path):
+            try:
+                shutil.move(move_item_path, archive_folder)
+            except:
+                raise gr.Error(f'Close out of any windows using where "{item} is located!')
+    
+    gr.Info('Finished archiving files to "archived_data" folder')

@@ -12,6 +12,7 @@ import torchaudio
 import music_tag
 import gradio as gr
 import gradio.utils
+import gradio.analytics
 
 from datetime import datetime
 
@@ -313,52 +314,81 @@ def prepare_dataset_proxy(voice, language, validation_text_length, validation_au
     return "\n".join(messages)
 
 
-def transcribe_other_language_proxy(voice, language, chunk_size, continuation_directory, align, rename):
-    indir = f'./training/{voice}/processed'
-    dataset_dir = os.path.join(indir, "run")
+def transcribe_other_language_proxy(voice, language, chunk_size, continuation_directory, align, rename, progress=gr.Progress(track_tqdm=True)):
+    training_folder = get_training_folder(voice)
+    processed_folder = os.path.join(training_folder,"processed")
+    dataset_dir = os.path.join(processed_folder, "run")
     merge_dir = os.path.join(dataset_dir, "dataset/wav_splits")
     audio_dataset_path = os.path.join(merge_dir, 'audio')
     train_text_path = os.path.join(dataset_dir, 'dataset/train.txt')
     validation_text_path = os.path.join(dataset_dir, 'dataset/validation.txt')
-    voice_root_path = os.path.join ("./training", voice)
     
     items_to_move = [audio_dataset_path, train_text_path, validation_text_path]
     
     for item in items_to_move:
-        if os.path.exists(os.path.join(voice_root_path, os.path.basename(item))):
-            raise gr.Error(f"Before running this button again, please remove the following from training/{voice}:\ntrain.txt\nvalidation.txt\naudio")
+        if os.path.exists(os.path.join(training_folder, os.path.basename(item))):
+            raise gr.Error(f'Remove ~~train.txt ~~validation.txt ~~audio(folder) from "./training/{voice}" before trying to transcribe a new dataset. Or click the "Archive Existing" button')
             
-    
     if continuation_directory:
-        dataset_dir = f'./training/{voice}/processed/{continuation_directory}'
+        dataset_dir = os.path.join(processed_folder, continuation_directory)
 
     elif os.path.exists(dataset_dir):
         current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        new_dataset_dir = os.path.join(indir, f"run_{current_datetime}")
+        new_dataset_dir = os.path.join(processed_folder, f"run_{current_datetime}")
         os.rename(dataset_dir, new_dataset_dir)
 
     chosen_directory = os.path.join("./voices", voice)
 
+    progress(0, desc="Processing audio files")
     process_audio_files(base_directory=dataset_dir,
                         language=language,
                         audio_dir=chosen_directory,
                         chunk_size=chunk_size,
                         no_align=align,
                         rename_files=rename)
+    progress(0.5, desc="Audio processing completed")
 
+    progress(0.5, desc="Merging segments")
     merge_segments(merge_dir)
+    progress(0.9, desc="Segment merging completed")
+
+    try:
+        for item in items_to_move:
+            if os.path.exists(os.path.join(training_folder, os.path.basename(item))):
+                print("Already exists")
+            else:
+                shutil.move(item, training_folder)
+        shutil.rmtree(dataset_dir)
+    except Exception as e:
+        raise gr.Error(e)
+        
+    progress(1, desc="Transcription and processing completed successfully!")
+
+    return "Transcription and processing completed successfully!"
+
+def make_bpe_tokenizer_proxy(voice, language, progress=gr.Progress(track_tqdm=True)):
+    training_folder = get_training_folder(voice)
+    if "train.txt" not in os.listdir(training_folder):
+        raise gr.Error(f'Transcribe a Dataset first and make sure "train.txt" is present in {training_folder}')
+    train_text_path = os.path.join(training_folder, "train.txt")
+    bpe_text_path = os.path.join(training_folder, "bpe_train.txt")
+    tokenizer_path = os.path.join("models", "tokenizers", f"{language}_tokenizer.json")
+    
+    from modules.tortoise_dataset_tools.bpe_tokenizer_tools.extract_text_from_train_dataset import extract_transcripts
+    from modules.tortoise_dataset_tools.bpe_tokenizer_tools.train_bpe_tokenizer import train_tokenizer
+    
+    progress(0, desc="Extracting transcripts")
+    extract_transcripts(train_text_path, bpe_text_path)
+    progress(0.5, desc="Transcripts extracted")
+    
+    progress(0.5, desc="Training tokenizer")
+    train_tokenizer(bpe_text_path, tokenizer_path, language)
+    progress(1, desc="Tokenizer training completed")
+    
+    return "Finished new tokenizer, please update it in settings before running training!"
     
 
     
-    for item in items_to_move:
-        if os.path.exists(os.path.join(voice_root_path, os.path.basename(item))):
-            print("Already exists")
-        else:
-            shutil.move(item, voice_root_path)
-    
-    
-
-
 def update_args_proxy(*args):
     kwargs = {}
     keys = list(EXEC_SETTINGS.keys())
@@ -468,16 +498,17 @@ def setup_gradio():
             def wrapped(*args, **kwargs):
                 return return_value
             return wrapped
-        gradio.utils.version_check = noop(gradio.utils.version_check)
-        gradio.utils.initiated_analytics = noop(
-            gradio.utils.initiated_analytics)
-        gradio.utils.launch_analytics = noop(gradio.utils.launch_analytics)
-        gradio.utils.integration_analytics = noop(
-            gradio.utils.integration_analytics)
-        gradio.utils.error_analytics = noop(gradio.utils.error_analytics)
-        gradio.utils.log_feature_analytics = noop(
-            gradio.utils.log_feature_analytics)
-        # gradio.utils.get_local_ip_address = noop(gradio.utils.get_local_ip_address, 'localhost')
+        gradio.utils.get_package_version = noop(gradio.utils.get_package_version)
+        
+        gradio.analytics.initiated_analytics = noop(
+            gradio.analytics.initiated_analytics)
+        gradio.analytics.launched_analytics = noop(gradio.analytics.launched_analytics)
+        gradio.analytics.integration_analytics = noop(
+            gradio.analytics.integration_analytics)
+        gradio.analytics.error_analytics = noop(gradio.analytics.error_analytics)
+        # gradio.utils.log_feature_analytics = noop(
+        #     gradio.utils.log_feature_analytics)
+        gradio.analytics.get_local_ip_address = noop(gradio.analytics.get_local_ip_address, 'localhost')
 
     if args.models_from_local_only:
         os.environ['TRANSFORMERS_OFFLINE'] = '1'
@@ -492,10 +523,11 @@ def setup_gradio():
             if os.path.exists(training_dir):
                 processed_dataset_list = [folder for folder in os.listdir(training_dir) if os.path.isdir(os.path.join(training_dir, folder))]
                 if processed_dataset_list:
-                    return gr.Dropdown.update(choices=processed_dataset_list, value=processed_dataset_list[0], interactive=True)
+                    processed_dataset_list.append("")
+                    return gr.Dropdown(choices=processed_dataset_list, value="", interactive=True)
         except Exception as e:
             print(f"Error getting dataset continuation: {str(e)}")
-        return gr.Dropdown.update(choices=[], value="", interactive=True)
+        return gr.Dropdown(choices=[], value="", interactive=True)   
 
 
     valle_models = get_valle_models()
@@ -535,7 +567,7 @@ def setup_gradio():
                     GENERATE_SETTINGS["voice"] = gr.Dropdown(
                         choices=voice_list_with_defaults, label="Voice", type="value", value=voice_list_with_defaults[0])
                     GENERATE_SETTINGS["mic_audio"] = gr.Audio(
-                        label="Microphone Source", source="microphone", type="filepath", visible=False)
+                        label="Microphone Source", sources="microphone", type="filepath", visible=False)
                     GENERATE_SETTINGS["voice_latents_chunks"] = gr.Number(
                         label="Voice Chunks", precision=0, value=0, visible=args.tts_backend == "tortoise")
                     GENERATE_SETTINGS["voice_latents_original_ar"] = gr.Checkbox(
@@ -669,7 +701,7 @@ def setup_gradio():
                 with gr.Row():
                     with gr.Column():
                         audio_in = gr.Files(
-                            type="file", label="Audio Input", file_types=["audio"])
+                            type="filepath", label="Audio Input", file_types=["audio"])
                         import_voice_name = gr.Textbox(label="Voice Name")
                         import_voice_button = gr.Button(value="Import Voice")
                     with gr.Column(visible=False) as col:
@@ -774,13 +806,22 @@ def setup_gradio():
                                 label="Chunk Size", value="20")
                         with gr.Row():
                             DATASET2_SETTINGS['align'] = gr.Checkbox(
-                                label="Disable Alignment", value=False   
+                                label="Disable WhisperX Alignment", value=False   
                             )
                             DATASET2_SETTINGS['rename'] = gr.Checkbox(
                                 label="Rename Audio Files", value=True
                             )
                         transcribe2_button = gr.Button(
                             value="Transcribe and Process")
+                        
+                        archive_button = gr. Button(
+                            value="Archive Existing"
+                        )
+                        
+                        make_bpe_tokenizer_button = gr.Button(
+                            value="Create BPE Tokenizer"
+                        )
+                        transcribe2_output = gr.Textbox(label="Progress Console")
                         # dataset2_settings = list(DATASET2_SETTINGS.values()) # Really only need this for tqdm to extract values
             with gr.Tab("Generate Configuration", visible=args.tts_backend != "bark"):
                 with gr.Row():
@@ -1275,7 +1316,24 @@ def setup_gradio():
                 DATASET2_SETTINGS['continue_directory'],
                 DATASET2_SETTINGS["align"],
                 DATASET2_SETTINGS["rename"]
+            ],
+            outputs=transcribe2_output
+        )
+        
+        archive_button.click(
+            archive_dataset,
+            inputs=[
+                DATASET2_SETTINGS['voice']
             ]
+        )
+        
+        make_bpe_tokenizer_button.click(
+            make_bpe_tokenizer_proxy,
+            inputs=[
+                DATASET2_SETTINGS['voice'],
+                DATASET2_SETTINGS['language']
+            ],
+            outputs=transcribe2_output
         )
 
         transcribe_all_button.click(
@@ -1341,6 +1399,6 @@ def setup_gradio():
 
         stop.click(fn=cancel_generate, inputs=None, outputs=None)
 
-    ui.queue(concurrency_count=args.concurrency_count)
+    # ui.queue(concurrency_count=args.concurrency_count)
     webui = ui
     return webui

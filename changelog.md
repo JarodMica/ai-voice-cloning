@@ -9,7 +9,25 @@ AR Quantization
 - ggml - https://github.com/ggerganov/ggml/issues/59
 - TortoiseCPP https://github.com/balisujohn/tortoise.cpp
 
-## 3/19/2024
+## 3/22/2024
+Completed initial implementation of "Prepare Other Language" gradio tab
+- Enables easy usage of transcribing a dataset, and then creating a BPE tokenizer for it
+    - All of the pathing for the most part is handled "smartly"
+
+## 3/20/2024
+Updating old dependencies and migrating to python 3.11.  This was spurred on because gradio did not want to output an error message no matter what I tried, so I figured why not update to the latest and greatest 🙃🤔
+- Deepspeed 14.0 built and installed for python 3.11, along with pytorch 2.2.1+cuda121. Build instruction credits go to https://github.com/S95Sedan/Deepspeed-Windows
+    - This is needed to allow for pydantic 2.6.4.  Since the latest version of gradio requires it... well I had to upgrade this.  Luckily 14.0 works with it
+- Fairseq 0.12.4 built for python 3.11 using this repo: https://github.com/VarunGumma/fairseq.  There is an issue with the official repo talked about here: https://github.com/facebookresearch/fairseq/issues/5012
+- gradio updated to 4.22.0.
+    - Particularly time consuming to update as several things were removed from gradio 3 to 4, so updated those lines of code
+        - Several functions from gradio.utils moved --> gradio.analytics
+        - concurrency_count comment out for the ui as this is a deprecated feature.  Haven't removed it yet...
+        - dropdown.update --> you don't need update anymore, just pass back the dropdown menu
+- Hifigan fixes:
+    - a "squeeze" issue for the output with hifigan fixed in utils.py
+    - Removed unsued values in the kwargs passed.  hf transformers doesn't like it.  Ideally, best to never have even set them or stored them if hifigan is selected, but this will work for now
+
 
 ## 3/17/2024
 - Adding in other language capability training to the repo, a few files are modifed in dlas and tortoise-tts modules for the cleaners to allow this to happen.
