@@ -9,6 +9,17 @@ AR Quantization
 - ggml - https://github.com/ggerganov/ggml/issues/59
 - TortoiseCPP https://github.com/balisujohn/tortoise.cpp
 
+## 3/24/2024
+Just cleaning up somethings and running tests on the code to make sure it functions as it should.  I should think of maybe a way to automate this... but that's a problem for another time.
+- Some values like number of processes (num_processes) to spawn based on your CPU cores added for conversion tasks  
+- Changed tab "Prepare Other Langauge" to "Prepare Dataset for Large Files" 
+- Moved all of the imports inside of main.py into the __name__ check to reduce overhead of multiprocessing
+- Ironing out continuation of transcription in case interrupted, so far, the cases I've tested I've fixed and added approrpiate code to accomodate these situations.  The only test case that doesn't work correctly would be if a file is interrupted in the middle of splitting segments based on the srt script since the segments never get written to train.txt...
+    - Maybe have a way of mapping what has already been segmented to the srt file that exists there? I'll have to think about this one. 
+    Other stuff
+        - Removes the "temp" file that is created for rename
+        - Modified the dataset script maker to ignore folders that contain mp3 segments already
+
 ## 3/23/2024
 - Comment out valle and bark instantiations to clean up console
 

@@ -314,7 +314,8 @@ def prepare_dataset_proxy(voice, language, validation_text_length, validation_au
     return "\n".join(messages)
 
 
-def transcribe_other_language_proxy(voice, language, chunk_size, continuation_directory, align, rename, progress=gr.Progress(track_tqdm=True)):
+def transcribe_other_language_proxy(voice, language, chunk_size, continuation_directory, align, rename, num_processes, keep_originals, progress=gr.Progress(track_tqdm=True)):
+    num_processes = int(num_processes)
     training_folder = get_training_folder(voice)
     processed_folder = os.path.join(training_folder,"processed")
     dataset_dir = os.path.join(processed_folder, "run")
@@ -322,6 +323,8 @@ def transcribe_other_language_proxy(voice, language, chunk_size, continuation_di
     audio_dataset_path = os.path.join(merge_dir, 'audio')
     train_text_path = os.path.join(dataset_dir, 'dataset/train.txt')
     validation_text_path = os.path.join(dataset_dir, 'dataset/validation.txt')
+    
+    large_file_num_processes = int(num_processes/2) # Used for instances where larger files are being processed, as to not run out of RAM
     
     items_to_move = [audio_dataset_path, train_text_path, validation_text_path]
     
@@ -339,21 +342,74 @@ def transcribe_other_language_proxy(voice, language, chunk_size, continuation_di
 
     from modules.tortoise_dataset_tools.audio_conversion_tools.split_long_file import get_duration, process_folder
     chosen_directory = os.path.join("./voices", voice)
-    file_durations = [get_duration(os.path.join(chosen_directory, item)) for item in os.listdir(chosen_directory) if os.path.isfile(os.path.join(chosen_directory, item))]
+    items = os.listdir(chosen_directory)
+    
+    # In case of sudden restart, removes this intermediary file used for rename
+    for file in items:
+        if "file___" in file:
+            os.remove(os.path.join(chosen_directory, file))
+    
+    file_durations = [get_duration(os.path.join(chosen_directory, item)) for item in items if os.path.isfile(os.path.join(chosen_directory, item))]
     progress(0.0, desc="Splitting long files")
     if any(duration > 3600*2 for duration in file_durations):
-        process_folder(chosen_directory)
+        process_folder(chosen_directory, large_file_num_processes)
+    
+    if not keep_originals:
+        originals_pre_split_path = os.path.join(chosen_directory, "original_pre_split")
+        try:
+            shutil.rmtree(originals_pre_split_path)
+        except:
+            # There is no directory to delete
+            pass
+            
+    progress(0.0, desc="Converting to MP3 files") # add tqdm later
+    import modules.tortoise_dataset_tools.audio_conversion_tools.convert_to_mp3 as c2mp3
+    
+    # Hacky way to get the functions working without changing where they output to...
+    for item in os.listdir(chosen_directory):
+        if os.path.isfile(os.path.join(chosen_directory, item)):
+            original_dir = os.path.join(chosen_directory, "original_files")
+            if not os.path.exists(original_dir):
+                os.makedirs(original_dir)
+            item_path = os.path.join(chosen_directory, item)
+            try:
+                shutil.move(item_path, original_dir)
+            except:
+                os.remove(item_path)
+    
+    try:
+        c2mp3.process_folder(original_dir, large_file_num_processes)
+    except:
+        raise gr.Error('No files found in the voice folder specified, make sure it is not empty.  If you interrupted the process, the files may be in the "original_files" folder')
+    
+    # Hacky way to move the files back into the main voice folder
+    for item in os.listdir(os.path.join(original_dir, "converted")):
+        item_path = os.path.join(original_dir, "converted", item)
+        if os.path.isfile(item_path):
+            try:
+                shutil.move(item_path, chosen_directory)
+            except:
+                os.remove(item_path)
+            
+    if not keep_originals:
+        originals_files = os.path.join(chosen_directory, "original_files")
+        try:
+            shutil.rmtree(originals_files)
+        except:
+            # There is no directory to delete
+            pass
 
-    progress(0.1, desc="Processing audio files")
+    progress(0.4, desc="Processing audio files")
     process_audio_files(base_directory=dataset_dir,
                         language=language,
                         audio_dir=chosen_directory,
                         chunk_size=chunk_size,
                         no_align=align,
-                        rename_files=rename)
-    progress(0.5, desc="Audio processing completed")
+                        rename_files=rename,
+                        num_processes=num_processes)
+    progress(0.7, desc="Audio processing completed")
 
-    progress(0.5, desc="Merging segments")
+    progress(0.7, desc="Merging segments")
     merge_segments(merge_dir)
     progress(0.9, desc="Segment merging completed")
 
@@ -791,7 +847,7 @@ def setup_gradio():
                     with gr.Column():
                         prepare_dataset_output = gr.TextArea(
                             label="Console Output", interactive=False, max_lines=8)
-            with gr.Tab("Prepare Large Files"):
+            with gr.Tab("Prepare Dataset for Large Files"):
                 with gr.Row():
                     with gr.Column():
                         DATASET2_SETTINGS = {}
@@ -810,12 +866,18 @@ def setup_gradio():
                                 label="Language", value="en")
                             DATASET2_SETTINGS['chunk_size'] = gr.Textbox(
                                 label="Chunk Size", value="20")
+                            DATASET2_SETTINGS['num_processes'] = gr.Textbox(
+                                label="Processes to Use", value=int(max(1, multiprocessing.cpu_count())))
+                            
                         with gr.Row():
                             DATASET2_SETTINGS['align'] = gr.Checkbox(
                                 label="Disable WhisperX Alignment", value=False   
                             )
                             DATASET2_SETTINGS['rename'] = gr.Checkbox(
                                 label="Rename Audio Files", value=True
+                            )
+                            DATASET2_SETTINGS['keep_originals'] = gr.Checkbox(
+                                label="Keep Original Files", value=True
                             )
                         transcribe2_button = gr.Button(
                             value="Transcribe and Process")
@@ -1323,7 +1385,9 @@ def setup_gradio():
                 DATASET2_SETTINGS['chunk_size'],
                 DATASET2_SETTINGS['continue_directory'],
                 DATASET2_SETTINGS["align"],
-                DATASET2_SETTINGS["rename"]
+                DATASET2_SETTINGS["rename"],
+                DATASET2_SETTINGS['num_processes'],
+                DATASET2_SETTINGS['keep_originals']
             ],
             outputs=transcribe2_output
         )
