@@ -23,6 +23,7 @@ import yaml
 import hashlib
 import string
 import random
+import shutil
 
 from tqdm import tqdm
 import torch
@@ -93,7 +94,7 @@ except Exception as e:
 	if VERBOSE_DEBUG:
 		print(traceback.format_exc())
 	pass
-
+'''
 try:
 	from vall_e.emb.qnt import encode as valle_quantize
 	from vall_e.emb.g2p import encode as valle_phonemize
@@ -108,12 +109,13 @@ except Exception as e:
 	if VERBOSE_DEBUG:
 		print(traceback.format_exc())
 	pass
-
+'''
 if VALLE_ENABLED:
 	TTSES.append('vall-e')
 
 # torchaudio.set_audio_backend('soundfile')
 
+'''
 try:
 	import bark
 	from bark import text_to_semantic
@@ -129,7 +131,7 @@ except Exception as e:
 	if VERBOSE_DEBUG:
 		print(traceback.format_exc())
 	pass
-
+'''
 if BARK_ENABLED:
 	TTSES.append('bark')
 
@@ -1230,7 +1232,14 @@ def generate_tortoise(**kwargs):
 		print(settings)
 		try:
 			if args.use_hifigan:
-				gen = tts.tts(cut_text, **settings)
+				# Removing unused arguments when running hifigan, hf transformers doesn't like all these unused args
+				# This only happens when loading with hifigan as it doesn't load the diffusion model... bandage for now
+				unused_args = ['diffusion_temperature', 'cond_free_k', 'sample_batch_size', 'diffusion_iterations',
+							'return_deterministic_state', 'diffusion_sampler', 'breathing_room', 'half_p', 'cond_free',
+							'autoregressive_model', 'diffusion_model', 'tokenizer_json']
+				filtered_settings = {k: v for k, v in settings.items() if k not in unused_args}
+				
+				gen = tts.tts(cut_text, **filtered_settings)
 			else:
 				gen, additionals = tts.tts(cut_text, **settings )
 				parameters['seed'] = additionals[0]
@@ -2085,7 +2094,7 @@ def update_training_dataplot(x_min=None, x_max=None, y_min=None, y_max=None, con
 			y_lim = None
 
 		if len(training_state.statistics['loss']) > 0:
-			losses = gr.LinePlot.update(
+			losses = gr.LinePlot(
 				value = pd.DataFrame(training_state.statistics['loss']),
 				x_lim=x_lim, y_lim=y_lim,
 				x="epoch", y="value", # x="it",
@@ -2093,7 +2102,7 @@ def update_training_dataplot(x_min=None, x_max=None, y_min=None, y_max=None, con
 				width=500, height=350
 			)
 		if len(training_state.statistics['lr']) > 0:
-			lrs = gr.LinePlot.update(
+			lrs = gr.LinePlot(
 				value = pd.DataFrame(training_state.statistics['lr']),
 				x_lim=x_lim,
 				x="epoch", y="value", # x="it",
@@ -2101,7 +2110,7 @@ def update_training_dataplot(x_min=None, x_max=None, y_min=None, y_max=None, con
 				width=500, height=350
 			)
 		if len(training_state.statistics['grad_norm']) > 0:
-			grad_norms = gr.LinePlot.update(
+			grad_norms = gr.LinePlot(
 				value = pd.DataFrame(training_state.statistics['grad_norm']),
 				x_lim=x_lim,
 				x="epoch", y="value", # x="it",
@@ -3152,7 +3161,7 @@ def get_voice( name, dir=get_voice_dir(), load_latents=True, extensions=["wav", 
 
 	return sorted( voice )
 
-def get_voice_list(dir=get_voice_dir(), append_defaults=False, extensions=["wav", "mp3", "flac", "pth"]):
+def get_voice_list(dir=get_voice_dir(), append_defaults=False, extensions=["wav", "mp3", "flac", "pth", "opus", "m4a", "webm"]):
 	defaults = [ "random", "microphone" ]
 	os.makedirs(dir, exist_ok=True)
 	#res = sorted([d for d in os.listdir(dir) if d not in defaults and os.path.isdir(os.path.join(dir, d)) and len(os.listdir(os.path.join(dir, d))) > 0 ])
@@ -3184,6 +3193,10 @@ def get_voice_list(dir=get_voice_dir(), append_defaults=False, extensions=["wav"
 		res = res + defaults
 	
 	return res
+
+
+    
+    
 
 def get_valle_models(dir="./training/"):
 	return [ f'{dir}/{d}/config.yaml' for d in os.listdir(dir) if os.path.exists(f'{dir}/{d}/config.yaml') ]
@@ -4070,7 +4083,6 @@ def merge_models( primary_model_name, secondary_model_name, alpha, progress=gr.P
 	print(message)
 	return message
 
-
 #Stuff added by Jarod
 def get_rvc_models():
 	folder_path = 'models/rvc_models'
@@ -4086,3 +4098,32 @@ def load_rvc_settings():
             return json.load(file)
     else:
         return {}  # Return an empty dict if the file doesn't exist
+    
+def get_training_folder(voice) -> str:
+    '''
+    voice(str) : voice to retrieve training folder from
+    '''
+    return f"./training/{voice}"
+
+def archive_dataset(voice):
+    training_folder = get_training_folder(voice)
+    archive_root = os.path.join(training_folder,"archived_data")
+    current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    archive_folder = os.path.join(archive_root,current_datetime)
+    
+    items_to_move = ["train.txt", "validation.txt", "audio"]
+    training_folder_contents = os.listdir(training_folder)
+
+    if not any(item in training_folder_contents for item in items_to_move):
+        raise gr.Error("No files to move")
+    
+    for item in items_to_move:
+        os.makedirs(archive_folder, exist_ok=True)
+        move_item_path = os.path.join(training_folder, item)
+        if os.path.exists(move_item_path):
+            try:
+                shutil.move(move_item_path, archive_folder)
+            except:
+                raise gr.Error(f'Close out of any windows using where "{item} is located!')
+    
+    gr.Info('Finished archiving files to "archived_data" folder')

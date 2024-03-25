@@ -9,7 +9,46 @@ AR Quantization
 - ggml - https://github.com/ggerganov/ggml/issues/59
 - TortoiseCPP https://github.com/balisujohn/tortoise.cpp
 
+## 3/24/2024
+Just cleaning up somethings and running tests on the code to make sure it functions as it should.  I should think of maybe a way to automate this... but that's a problem for another time.
+- Some values like number of processes (num_processes) to spawn based on your CPU cores added for conversion tasks  
+- Changed tab "Prepare Other Langauge" to "Prepare Dataset for Large Files" 
+- Moved all of the imports inside of main.py into the __name__ check to reduce overhead of multiprocessing
+- Ironing out continuation of transcription in case interrupted, so far, the cases I've tested I've fixed and added approrpiate code to accomodate these situations.  The only test case that doesn't work correctly would be if a file is interrupted in the middle of splitting segments based on the srt script since the segments never get written to train.txt...
+    - Maybe have a way of mapping what has already been segmented to the srt file that exists there? I'll have to think about this one. 
+    Other stuff
+        - Removes the "temp" file that is created for rename
+        - Modified the dataset script maker to ignore folders that contain mp3 segments already
 
+## 3/23/2024
+- Comment out valle and bark instantiations to clean up console
+
+## 3/22/2024
+Completed initial implementation of "Prepare Other Language" gradio tab.  A lot of "polishing" going on right now, simply, just going through the app, step by step, and making sure where bugs occur due to upgrades, that those are resolved
+- Enables easy usage of transcribing a dataset, and then creating a BPE tokenizer for it
+    - All of the pathing for the most part is handled "smartly"
+
+## 3/20/2024
+Updating old dependencies and migrating to python 3.11.  This was spurred on because gradio did not want to output an error message no matter what I tried, so I figured why not update to the latest and greatest 🙃🤔
+- Deepspeed 14.0 built and installed for python 3.11, along with pytorch 2.2.1+cuda121. Build instruction credits go to https://github.com/S95Sedan/Deepspeed-Windows
+    - This is needed to allow for pydantic 2.6.4.  Since the latest version of gradio requires it... well I had to upgrade this.  Luckily 14.0 works with it
+- Fairseq 0.12.4 built for python 3.11 using this repo: https://github.com/VarunGumma/fairseq.  There is an issue with the official repo talked about here: https://github.com/facebookresearch/fairseq/issues/5012
+- gradio updated to 4.22.0.
+    - Particularly time consuming to update as several things were removed from gradio 3 to 4, so updated those lines of code
+        - Several functions from gradio.utils moved --> gradio.analytics
+        - concurrency_count comment out for the ui as this is a deprecated feature.  Haven't removed it yet...
+        - dropdown.update --> you don't need update anymore, just pass back the dropdown menu
+- Hifigan fixes:
+    - a "squeeze" issue for the output with hifigan fixed in utils.py
+    - Removed unsued values in the kwargs passed.  hf transformers doesn't like it.  Ideally, best to never have even set them or stored them if hifigan is selected, but this will work for now
+
+
+## 3/17/2024
+- Adding in other language capability training to the repo, a few files are modifed in dlas and tortoise-tts modules for the cleaners to allow this to happen.
+- In both DLAS and Tortoise-tts, update the preprocessing text to be able to handle other languages
+- Added https://github.com/JarodMica/tortoise-dataset-tools inside of modules (will be used for other languages)
+    - In this case, made whisperx a mandatory install
+    - Adding a new tab called right now "Prepare Other Langauge" that will allows you to use the dataset tools I used for other languages
 
 ## 2/11/2024
 - Allow for decimal values in the epoch text box as a bandaid to the async gradio issue, causing the training run to crash.  Not sure if it's gradio or if it's an error in the DLAS trainer, but this will need to be fixed as it's quite annoying to have to restart training over and over

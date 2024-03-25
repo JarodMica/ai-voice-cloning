@@ -1,29 +1,29 @@
-import os
-import sys
-
-if os.path.exists("runtime"):
-	# Get the directory where the script is located
-	script_dir = os.path.dirname(os.path.abspath(__file__))
-
-	# Add this directory to sys.path
-	if script_dir not in sys.path:
-		sys.path.insert(0, script_dir)
-
-if 'TORTOISE_MODELS_DIR' not in os.environ:
-	os.environ['TORTOISE_MODELS_DIR'] = os.path.realpath(os.path.join(os.getcwd(), './models/tortoise/'))
-
-if 'TRANSFORMERS_CACHE' not in os.environ:
-	os.environ['TRANSFORMERS_CACHE'] = os.path.realpath(os.path.join(os.getcwd(), './models/transformers/'))
-
-os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
-
-from utils import *
-from webui import *
-
-from api.websocket_server import start_websocket_server
-
+# Moved all of the imports into __name__ == "__main__" due to how multiprocessing spawns instances, makes multiprocessing faster as it reduces import overhead
 
 if __name__ == "__main__":
+	import os
+	import sys
+
+	if os.path.exists("runtime"):
+		# Get the directory where the script is located
+		script_dir = os.path.dirname(os.path.abspath(__file__))
+
+		# Add this directory to sys.path
+		if script_dir not in sys.path:
+			sys.path.insert(0, script_dir)
+
+	if 'TORTOISE_MODELS_DIR' not in os.environ:
+		os.environ['TORTOISE_MODELS_DIR'] = os.path.realpath(os.path.join(os.getcwd(), './models/tortoise/'))
+
+	if 'TRANSFORMERS_CACHE' not in os.environ:
+		os.environ['TRANSFORMERS_CACHE'] = os.path.realpath(os.path.join(os.getcwd(), './models/transformers/'))
+
+	os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
+
+	from utils import *
+	from webui import *
+
+	from api.websocket_server import start_websocket_server
 	args = setup_args()
 
 	if args.listen_path is not None and args.listen_path != "/":
