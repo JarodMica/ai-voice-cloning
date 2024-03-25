@@ -190,7 +190,7 @@ def history_view_results(voice):
 
     return (
         results,
-        gr.Dropdown.update(choices=sorted(files))
+        gr.Dropdown(choices=sorted(files))
     )
 
 
@@ -337,9 +337,14 @@ def transcribe_other_language_proxy(voice, language, chunk_size, continuation_di
         new_dataset_dir = os.path.join(processed_folder, f"run_{current_datetime}")
         os.rename(dataset_dir, new_dataset_dir)
 
+    from modules.tortoise_dataset_tools.audio_conversion_tools.split_long_file import get_duration, process_folder
     chosen_directory = os.path.join("./voices", voice)
+    file_durations = [get_duration(os.path.join(chosen_directory, item)) for item in os.listdir(chosen_directory) if os.path.isfile(os.path.join(chosen_directory, item))]
+    progress(0.0, desc="Splitting long files")
+    if any(duration > 3600*2 for duration in file_durations):
+        process_folder(chosen_directory)
 
-    progress(0, desc="Processing audio files")
+    progress(0.1, desc="Processing audio files")
     process_audio_files(base_directory=dataset_dir,
                         language=language,
                         audio_dir=chosen_directory,
@@ -477,11 +482,12 @@ def save_training_settings_proxy(*args):
 
 def update_voices():
     return (
-        gr.Dropdown.update(choices=get_voice_list(append_defaults=True)),
-        gr.Dropdown.update(choices=get_voice_list()),
-        gr.Dropdown.update(choices=get_voice_list(args.results_folder)),
-        gr.Dropdown.update(choices=get_rvc_models()),  # Update for RVC models
-        gr.Dropdown.update(choices=get_rvc_indexes())  # Update for RVC models
+        gr.Dropdown(choices=get_voice_list(append_defaults=True)),
+        gr.Dropdown(choices=get_voice_list()),
+        gr.Dropdown(choices=get_voice_list(args.results_folder)),
+        gr.Dropdown(choices=get_rvc_models()),  # Update for RVC models
+        gr.Dropdown(choices=get_rvc_indexes()),  # Update for RVC models
+        gr.Dropdown(choices=get_voice_list())
     )
 
 
@@ -821,6 +827,7 @@ def setup_gradio():
                         make_bpe_tokenizer_button = gr.Button(
                             value="Create BPE Tokenizer"
                         )
+                    with gr.Column():
                         transcribe2_output = gr.Textbox(label="Progress Console")
                         # dataset2_settings = list(DATASET2_SETTINGS.values()) # Really only need this for tqdm to extract values
             with gr.Tab("Generate Configuration", visible=args.tts_backend != "bark"):
@@ -1194,15 +1201,16 @@ def setup_gradio():
                                  DATASET_SETTINGS['voice'],
                                  history_voices,
                                  RVC_SETTINGS['rvc_model'],  # Add this line
-                                 RVC_SETTINGS['file_index']
+                                 RVC_SETTINGS['file_index'],
+                                 DATASET2_SETTINGS['voice']
 
                              ]
                              )
 
         generate_settings = list(GENERATE_SETTINGS.values())
         rvc_settings = list(RVC_SETTINGS.values())
-        print(generate_settings)
-        print(rvc_settings)
+        # print(generate_settings)
+        # print(rvc_settings)
         submit.click(
             lambda: (gr.update(visible=False), gr.update(
                 visible=False), gr.update(visible=False)),

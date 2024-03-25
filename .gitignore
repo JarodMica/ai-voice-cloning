@@ -12,6 +12,7 @@ rvc/
 pyfastmp3decoder/
 .vscode/
 onnx_test_stuff/
+*.whl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

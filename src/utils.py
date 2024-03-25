@@ -94,7 +94,7 @@ except Exception as e:
 	if VERBOSE_DEBUG:
 		print(traceback.format_exc())
 	pass
-
+'''
 try:
 	from vall_e.emb.qnt import encode as valle_quantize
 	from vall_e.emb.g2p import encode as valle_phonemize
@@ -109,12 +109,13 @@ except Exception as e:
 	if VERBOSE_DEBUG:
 		print(traceback.format_exc())
 	pass
-
+'''
 if VALLE_ENABLED:
 	TTSES.append('vall-e')
 
 # torchaudio.set_audio_backend('soundfile')
 
+'''
 try:
 	import bark
 	from bark import text_to_semantic
@@ -130,7 +131,7 @@ except Exception as e:
 	if VERBOSE_DEBUG:
 		print(traceback.format_exc())
 	pass
-
+'''
 if BARK_ENABLED:
 	TTSES.append('bark')
 
@@ -2093,7 +2094,7 @@ def update_training_dataplot(x_min=None, x_max=None, y_min=None, y_max=None, con
 			y_lim = None
 
 		if len(training_state.statistics['loss']) > 0:
-			losses = gr.LinePlot.update(
+			losses = gr.LinePlot(
 				value = pd.DataFrame(training_state.statistics['loss']),
 				x_lim=x_lim, y_lim=y_lim,
 				x="epoch", y="value", # x="it",
@@ -2101,7 +2102,7 @@ def update_training_dataplot(x_min=None, x_max=None, y_min=None, y_max=None, con
 				width=500, height=350
 			)
 		if len(training_state.statistics['lr']) > 0:
-			lrs = gr.LinePlot.update(
+			lrs = gr.LinePlot(
 				value = pd.DataFrame(training_state.statistics['lr']),
 				x_lim=x_lim,
 				x="epoch", y="value", # x="it",
@@ -2109,7 +2110,7 @@ def update_training_dataplot(x_min=None, x_max=None, y_min=None, y_max=None, con
 				width=500, height=350
 			)
 		if len(training_state.statistics['grad_norm']) > 0:
-			grad_norms = gr.LinePlot.update(
+			grad_norms = gr.LinePlot(
 				value = pd.DataFrame(training_state.statistics['grad_norm']),
 				x_lim=x_lim,
 				x="epoch", y="value", # x="it",
@@ -3160,7 +3161,7 @@ def get_voice( name, dir=get_voice_dir(), load_latents=True, extensions=["wav", 
 
 	return sorted( voice )
 
-def get_voice_list(dir=get_voice_dir(), append_defaults=False, extensions=["wav", "mp3", "flac", "pth"]):
+def get_voice_list(dir=get_voice_dir(), append_defaults=False, extensions=["wav", "mp3", "flac", "pth", "opus", "m4a", "webm"]):
 	defaults = [ "random", "microphone" ]
 	os.makedirs(dir, exist_ok=True)
 	#res = sorted([d for d in os.listdir(dir) if d not in defaults and os.path.isdir(os.path.join(dir, d)) and len(os.listdir(os.path.join(dir, d))) > 0 ])

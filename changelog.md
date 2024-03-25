@@ -9,8 +9,11 @@ AR Quantization
 - ggml - https://github.com/ggerganov/ggml/issues/59
 - TortoiseCPP https://github.com/balisujohn/tortoise.cpp
 
+## 3/23/2024
+- Comment out valle and bark instantiations to clean up console
+
 ## 3/22/2024
-Completed initial implementation of "Prepare Other Language" gradio tab
+Completed initial implementation of "Prepare Other Language" gradio tab.  A lot of "polishing" going on right now, simply, just going through the app, step by step, and making sure where bugs occur due to upgrades, that those are resolved
 - Enables easy usage of transcribing a dataset, and then creating a BPE tokenizer for it
     - All of the pathing for the most part is handled "smartly"
 
