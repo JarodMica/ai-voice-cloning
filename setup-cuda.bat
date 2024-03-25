@@ -76,8 +76,8 @@ if not exist "%file_name%" (
     echo File %file_name% already exists, skipping download.
 )
 
-set download_deepspeed=https://huggingface.co/Jmica/rvc/resolve/main/deepspeed-0.14.0-unknown-cp311-cp311-win_amd64.whl?download=true
-set fileds_name=deepspeed-0.14.0-unknown-cp311-cp311-win_amd64.whl
+set download_deepspeed=https://huggingface.co/Jmica/rvc/resolve/main/deepspeed-0.14.0-cp311-cp311-win_amd64.whl?download=true
+set fileds_name=deepspeed-0.14.0-cp311-cp311-win_amd64.whl
 
 if not exist "%fileds_name%" (
     echo Downloading %fileds_name%...
@@ -93,7 +93,7 @@ if not exist "%fileds_name%" (
 :: Install Fairseq, Deepspeed and RVC TTS Pipeline
 python -m pip install .\fairseq-0.12.4-cp311-cp311-win_amd64.whl
 python -m pip install git+https://github.com/JarodMica/rvc-tts-pipeline.git@lightweight#egg=rvc_tts_pipe
-python -m pip install deepspeed-0.14.0-unknown-cp311-cp311-win_amd64.whl
+python -m pip install deepspeed-0.14.0-cp311-cp311-win_amd64.whl
 
 :: Install whisperx
 python -m pip install git+https://github.com/m-bain/whisperx.git
