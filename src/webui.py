@@ -791,7 +791,7 @@ def setup_gradio():
                     with gr.Column():
                         prepare_dataset_output = gr.TextArea(
                             label="Console Output", interactive=False, max_lines=8)
-            with gr.Tab("Prepare Other Language"):
+            with gr.Tab("Prepare Large Files"):
                 with gr.Row():
                     with gr.Column():
                         DATASET2_SETTINGS = {}
