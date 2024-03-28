@@ -3161,7 +3161,7 @@ def get_voice( name, dir=get_voice_dir(), load_latents=True, extensions=["wav", 
 
 	return sorted( voice )
 
-def get_voice_list(dir=get_voice_dir(), append_defaults=False, extensions=["wav", "mp3", "flac", "pth", "opus", "m4a", "webm"]):
+def get_voice_list(dir=get_voice_dir(), append_defaults=False, extensions=["wav", "mp3", "flac", "pth", "opus", "m4a", "webm", "mp4"]):
 	defaults = [ "random", "microphone" ]
 	os.makedirs(dir, exist_ok=True)
 	#res = sorted([d for d in os.listdir(dir) if d not in defaults and os.path.isdir(os.path.join(dir, d)) and len(os.listdir(os.path.join(dir, d))) > 0 ])
