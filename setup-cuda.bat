@@ -120,8 +120,9 @@ python -m pip install -r requirements.txt
 call download_ffmpeg.bat
 
 :: Setup BnB
-.\setup-cuda-bnb.bat
+call setup-cuda-bnb.bat
 
+.\start.bat
 :: Clean up
 del *.sh
 
