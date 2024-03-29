@@ -867,7 +867,7 @@ def setup_gradio():
                             DATASET2_SETTINGS['language'] = gr.Textbox(
                                 label="Language", value="en")
                             DATASET2_SETTINGS['chunk_size'] = gr.Textbox(
-                                label="Chunk Size", value="20")
+                                label="Chunk Size", value="15")
                             DATASET2_SETTINGS['num_processes'] = gr.Textbox(
                                 label="Processes to Use", value=int(max(1, multiprocessing.cpu_count())))
                             
