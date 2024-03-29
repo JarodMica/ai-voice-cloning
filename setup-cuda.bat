@@ -90,7 +90,7 @@ if not exist "%fileds_name%" (
     echo File %fileds_name% already exists, skipping download.
 )
 
-set download_pyfastmp3decoder=
+set download_pyfastmp3decoder=https://huggingface.co/Jmica/rvc/resolve/main/pyfastmp3decoder-0.0.1-cp311-cp311-win_amd64.whl?download=true
 set filepyfast_name=pyfastmp3decoder-0.0.1-cp311-cp311-win_amd64.whl
 
 if not exist "%filepyfast_name%" (
