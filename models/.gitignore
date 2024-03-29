@@ -1,3 +1,6 @@
 *
+!tokenizers/
 !.gitignore
 !rvc_models/
+!.template.dlas.yaml
+!tortoise/

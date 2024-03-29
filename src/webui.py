@@ -535,15 +535,28 @@ def save_training_settings_proxy(*args):
     settings, messages = save_training_settings(**kwargs)
     return "\n".join(messages)
 
+def get_dataset_continuation(voice):
+    try:
+        training_dir = f"training/{voice}/processed"
+        if os.path.exists(training_dir):
+            processed_dataset_list = [folder for folder in os.listdir(training_dir) if os.path.isdir(os.path.join(training_dir, folder))]
+            if processed_dataset_list:
+                processed_dataset_list.append("")
+                return gr.Dropdown(choices=processed_dataset_list, value="", interactive=True)
+    except Exception as e:
+        print(f"Error getting dataset continuation: {str(e)}")
+    return gr.Dropdown(choices=[], value="", interactive=True)   
 
-def update_voices():
+
+def update_voices(voice):
     return (
         gr.Dropdown(choices=get_voice_list(append_defaults=True)),
         gr.Dropdown(choices=get_voice_list()),
         gr.Dropdown(choices=get_voice_list(args.results_folder)),
         gr.Dropdown(choices=get_rvc_models()),  # Update for RVC models
         gr.Dropdown(choices=get_rvc_indexes()),  # Update for RVC models
-        gr.Dropdown(choices=get_voice_list())
+        gr.Dropdown(choices=get_voice_list()),
+        get_dataset_continuation(voice)
     )
 
 
@@ -579,17 +592,6 @@ def setup_gradio():
     voice_list = get_voice_list()
     result_voices = get_voice_list(args.results_folder)
     
-    def get_dataset_continuation(voice):
-        try:
-            training_dir = f"training/{voice}/processed"
-            if os.path.exists(training_dir):
-                processed_dataset_list = [folder for folder in os.listdir(training_dir) if os.path.isdir(os.path.join(training_dir, folder))]
-                if processed_dataset_list:
-                    processed_dataset_list.append("")
-                    return gr.Dropdown(choices=processed_dataset_list, value="", interactive=True)
-        except Exception as e:
-            print(f"Error getting dataset continuation: {str(e)}")
-        return gr.Dropdown(choices=[], value="", interactive=True)   
 
 
     valle_models = get_valle_models()

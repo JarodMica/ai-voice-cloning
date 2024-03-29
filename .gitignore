@@ -1,7 +1,6 @@
 # ignores user files
 /venv/
 /venv_cpu/
-/models/*
 /training/*
 /config/*
 output/
@@ -13,6 +12,7 @@ pyfastmp3decoder/
 .vscode/
 onnx_test_stuff/
 *.whl
+*.exe
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -145,7 +145,7 @@ dmypy.json
 .pyre/
 
 .idea/*
-.models/*
+
 .custom/*
 results/*
 debug_states/*

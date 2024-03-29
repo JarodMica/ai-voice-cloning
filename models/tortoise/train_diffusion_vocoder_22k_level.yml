@@ -1,0 +1,18 @@
+path:
+  pretrain_model_dvae: './models/tortoise/dvae.pth'
+  strict_load: true
+  #resume_state: ../experiments/train_imgnet_vqvae_stage1/training_state/0.state   # <-- Set this to resume from a previous training state.
+networks:
+  dvae:
+    type: generator
+    which_model_G: lucidrains_dvae
+    kwargs:
+      channels: 80
+      codebook_dim: 512
+      hidden_dim: 512
+      kernel_size: 3
+      num_layers: 2
+      num_resnet_blocks: 3
+      num_tokens: 8192
+      positional_dims: 1
+      use_transposed_convs: false

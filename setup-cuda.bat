@@ -90,23 +90,34 @@ if not exist "%fileds_name%" (
     echo File %fileds_name% already exists, skipping download.
 )
 
-:: Install Fairseq, Deepspeed and RVC TTS Pipeline
+set download_pyfastmp3decoder=
+set filepyfast_name=pyfastmp3decoder-0.0.1-cp311-cp311-win_amd64.whl
+
+if not exist "%filepyfast_name%" (
+    echo Downloading %filepyfast_name%...
+    curl -L -O "%download_pyfastmp3decoder%"
+    if errorlevel 1 (
+        echo Download failed. Please check your internet connection or the URL and try again.
+        exit /b 1
+    )
+) else (
+    echo File %filepyfast_name% already exists, skipping download.
+)
+
+:: Install Fairseq, Deepspeed, pyfast, and RVC TTS Pipeline
 python -m pip install .\fairseq-0.12.4-cp311-cp311-win_amd64.whl
 python -m pip install git+https://github.com/JarodMica/rvc-tts-pipeline.git@lightweight#egg=rvc_tts_pipe
 python -m pip install deepspeed-0.14.0-cp311-cp311-win_amd64.whl
+python -m pip install pyfastmp3decoder-0.0.1-cp311-cp311-win_amd64.whl
 
 :: Install whisperx
 python -m pip install git+https://github.com/m-bain/whisperx.git
 
-:: Install JBetker's repo for mp3 training
-git clone https://github.com/neonbjb/pyfastmp3decoder.git
-cd pyfastmp3decoder
-git submodule update --init --recursive
-python setup.py install
-cd ..
-
 :: Install other requirements (this is done last due to potential package conflicts)
 python -m pip install -r requirements.txt
+
+:: Download and install ffmpeg
+call download_ffmpeg.bat
 
 :: Setup BnB
 .\setup-cuda-bnb.bat
