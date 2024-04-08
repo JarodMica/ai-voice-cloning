@@ -7,7 +7,7 @@ min_python_version='"3.11.0rc2"'
 $python_bin -m pip install --upgrade packaging
 $python_bin -c "import platform; from packaging.version import Version; exit(Version(platform.python_version()) < Version(${min_python_version}))"
 if [[ $? = 1 ]]; then
-    echo "Python 3.11 is not installed. Please install it and try again."
+    echo "Python >= ${min_python_version} is not installed. Please install it and try again."
     exit 1
 fi
 
@@ -103,6 +103,7 @@ pip install git+https://github.com/m-bain/whisperx.git
 # Install other requirements (this is done last due to potential package conflicts)
 pip install -r requirements.txt
 
+chmod +x ./start.sh
 ./start.sh
 # Clean up
 rm -f *.bat
