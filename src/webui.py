@@ -343,6 +343,9 @@ def transcribe_other_language_proxy(voice, language, chunk_size, continuation_di
     from modules.tortoise_dataset_tools.audio_conversion_tools.split_long_file import get_duration, process_folder
     chosen_directory = os.path.join("./voices", voice)
     items = os.listdir(chosen_directory)
+    for file in items:
+        if file.endswith(".pth"):
+            items.remove(file)
     
     # In case of sudden restart, removes this intermediary file used for rename
     for file in items:
