@@ -9,12 +9,15 @@ AR Quantization
 - ggml - https://github.com/ggerganov/ggml/issues/59
 - TortoiseCPP https://github.com/balisujohn/tortoise.cpp
 
+
+
 ## 3/29/2024
 Additional clean-up, discovered that some key files were missing from the repo if you were going to do a manual install
 - setup-cuda.bat is much more handsoff now, it pretty much downloads everything you need.
 
 Bug/error:
 - Max recursion depth met when trying to use a chunk size of 20... results in training not occuring. Lowered chunk size to 15 by default, not sure why this occurs, but it's possible too long of audio files can't get processed and end up in an endless recursive loop.
+    - I think the issue lies in the parameter "max_wav_length", which, can actually be adjusted to accept larger audio files.  Too large and you run into errors, but 26 second max seems to be training.  I wonder if this will help with longer sentences... Regardless, something to look into maybe
 
 ## 3/24/2024
 Just cleaning up somethings and running tests on the code to make sure it functions as it should.  I should think of maybe a way to automate this... but that's a problem for another time.
