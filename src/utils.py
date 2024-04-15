@@ -43,6 +43,8 @@ from tortoise.api_fast import TextToSpeech as Toroise_TTS_Hifi
 from tortoise.utils.audio import load_audio, load_voice, load_voices, get_voice_dir, get_voices
 from tortoise.utils.text import split_and_recombine_text
 from tortoise.utils.device import get_device_name, set_device_name, get_device_count, get_device_vram, get_device_batch_size, do_gc
+# TODO: The below import blocks any CLI parameters.
+#       Try running with --low-vram
 from rvc_pipe.rvc_infer import rvc_convert
 
 MODELS['dvae.pth'] = "https://huggingface.co/jbetker/tortoise-tts-v2/resolve/3704aea61678e7e468a06d8eea121dba368a798e/.models/dvae.pth"
@@ -1181,6 +1183,7 @@ def generate_tortoise(**kwargs):
 			model_hash = settings["model_hash"][:8] if settings is not None and "model_hash" in settings else tts.autoregressive_model_hash[:8]
 
 			dir = f'{get_voice_dir()}/{voice}/'
+			# TODO: Use of model_hash here causes issues in development as new hashes are added to the repo.
 			latents_path = f'{dir}/cond_latents_{model_hash}.pth'
 
 			if voice == "random" or voice == "microphone":
@@ -3789,7 +3792,9 @@ def unload_tts():
 	do_gc()
 
 def reload_tts():
-	subprocess.Popen(["start.bat"])
+	in_docker = os.environ.get("IN_DOCKER", "false")
+	if in_docker == "false":
+		subprocess.Popen(["start.bat"])
 	with open("reload_flag.txt", "w") as f:
 		f.write("reload")
 	os.kill(os.getpid(), signal.SIGTERM)  # Or signal.SIGKILL for an even harder kill

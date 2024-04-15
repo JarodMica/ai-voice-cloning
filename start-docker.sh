@@ -1,14 +1,19 @@
 #!/bin/bash
-CMD="python3 ./src/main.py $@"
-# CMD="bash"
-CPATH="/home/user/ai-voice-cloning"
-docker run --rm --gpus all \
-    --mount "type=bind,src=$PWD/models,dst=$CPATH/models" \
-    --mount "type=bind,src=$PWD/training,dst=$CPATH/training" \
-    --mount "type=bind,src=$PWD/voices,dst=$CPATH/voices" \
-    --mount "type=bind,src=$PWD/bin,dst=$CPATH/bin" \
-    --workdir $CPATH \
+
+docker run \
+    -ti \
+    --rm \
+    --gpus all \
+    --name ai-voice-cloning \
+    -v "${PWD}/models:/home/user/ai-voice-cloning/models" \
+    -v "${PWD}/training:/home/user/ai-voice-cloning/training" \
+    -v "${PWD}/voices:/home/user/ai-voice-cloning/voices" \
+    -v "${PWD}/bin:/home/user/ai-voice-cloning/bin" \
+    -v "${PWD}/config:/home/user/ai-voice-cloning/config" \
     --user "$(id -u):$(id -g)" \
     --net host \
-    -it ai-voice-cloning $CMD
+    ai-voice-cloning
 
+# For dev:
+#     -v "${PWD}/src:/home/user/ai-voice-cloning/src" \
+#     -v "/home/user/ai-voice-cloning/src/__pycache__" \
