@@ -2,22 +2,32 @@
 
 # Check if Python 3.11 is installed
 python_bin='python3.11'
-min_python_version='"3.11.0rc2"'
 
-$python_bin -m pip install --upgrade packaging
-$python_bin -c "import platform; from packaging.version import Version; exit(Version(platform.python_version()) < Version(${min_python_version}))"
-if [[ $? = 1 ]]; then
-    echo "Python >= ${min_python_version} is not installed. Please install it and try again."
+if ! command -v $python_bin &> /dev/null; then
+    echo "Python 3.11 is not installed. Please install it using the following command:"
+    echo "sudo apt install -y python3.11"
+    echo "After installing Python 3.11, please run the script again."
+    exit 1
+fi
+
+# Check if python3.11-venv is installed
+if ! $python_bin -m venv --help &> /dev/null; then
+    echo "The python3.11-venv package is not installed. Please install it using the following command:"
+    echo "sudo apt install -y python3.11-venv"
+    echo "After installing the python3.11-venv package, please run the script again."
+    exit 1
+fi
+
+# Set up virtual environment with Python 3.11
+$python_bin -m venv venv
+if [ $? -ne 0 ]; then
+    echo "Failed to create virtual environment. Please check the error message above and try again."
     exit 1
 fi
 
 # Initialize and update git submodules
 git submodule init
 git submodule update --remote
-
-# Set up virtual environment with Python 3.11
-$python_bin -m venv venv
-source ./venv/bin/activate
 
 # Upgrade pip and install required packages
 pip install --upgrade pip
