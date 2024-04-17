@@ -12,8 +12,13 @@ docker run \
     -v "${PWD}/config:/home/user/ai-voice-cloning/config" \
     --user "$(id -u):$(id -g)" \
     --net host \
-    ai-voice-cloning
+    ai-voice-cloning $@
 
 # For dev:
 #     -v "${PWD}/src:/home/user/ai-voice-cloning/src" \
+#     -v "${PWD}/modules/tortoise_dataset_tools/dataset_whisper_tools:/home/user/ai-voice-cloning/modules/tortoise_dataset_tools/dataset_whisper_tools" \
+#     -v "${PWD}/modules/dlas/dlas:/home/user/ai-voice-cloning/modules/dlas/dlas" \
 #     -v "/home/user/ai-voice-cloning/src/__pycache__" \
+
+# For testing:
+#    -e "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" \
