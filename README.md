@@ -42,10 +42,30 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
     - Check out the whisperx github page for more details, but it's much faster for longer audio files.  If you're processing one-by-one with an already split dataset, it doesn't improve speeds that much.
 
 
-### Linux via Docker
-1. Clone the repository: `git clone https://github.com/JarodMica/ai-voice-cloning.git && cd ai-voice-cloning`
-2. Build the image with `./setup-docker.sh`
-3. Start the container with `./start-docker.sh`
+### Docker for Linux (or WSL2)
+
+#### Linux Specific Setup
+1. Make sure the latest nvidia drivers are installed: `sudo ubuntu-drivers install`
+2. Install Docker your preferred way
+
+#### Windows Specific Setup
+1. Install WSL2 in PowerShell with `wsl --install`
+2. Open up `Ubuntu` after a restart
+3. Remove the original nvidia cache key: `sudo apt-key del 7fa2af80`
+4. Download CUDA toolkit keyring: `wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb`
+5. Install keyring: `sudo dpkg -i cuda-keyring_1.1-1_all.deb`
+6. Update package list: `sudo apt-get update`
+7. Install CUDA toolkit: `sudo apt-get -y install cuda-toolkit-12-4`
+8. Install Docker Desktop using WSL2 as the backend
+9. Restart
+10. If you wish to monitor the terminal remotely via SSH, follow [this guide](https://www.hanselman.com/blog/how-to-ssh-into-wsl2-on-windows-10-from-an-external-machine).
+
+#### Building and Running in Docker
+1. Open a terminal (or Ubuntu WSL)
+2. Clone the repository: `git clone https://github.com/JarodMica/ai-voice-cloning.git && cd ai-voice-cloning`
+3. Build the image with `./setup-docker.sh`
+4. Start the container with `./start-docker.sh`
+5. Visit `http://localhost:7860` or remotely with `http://<ip>:7860`
 
 
 ## Instructions

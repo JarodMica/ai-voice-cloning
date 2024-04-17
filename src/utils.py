@@ -3488,7 +3488,7 @@ def setup_args(cli=False):
 		try:
 			match = re.findall(r"^(?:(.+?):(\d+))?(\/.*?)?$", args.listen)[0]
 
-			args.listen_host = match[0] if match[0] != "" else "127.0.0.1"
+			args.listen_host = match[0] if match[0] != "" else "0.0.0.0"
 			args.listen_port = match[1] if match[1] != "" else None
 			args.listen_path = match[2] if match[2] != "" else "/"
 		except Exception as e:

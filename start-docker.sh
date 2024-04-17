@@ -11,7 +11,7 @@ docker run \
     -v "${PWD}/bin:/home/user/ai-voice-cloning/bin" \
     -v "${PWD}/config:/home/user/ai-voice-cloning/config" \
     --user "$(id -u):$(id -g)" \
-    --net host \
+    -p "7860:7860" \
     ai-voice-cloning $@
 
 # For dev:
