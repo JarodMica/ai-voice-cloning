@@ -49,8 +49,9 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 2. Install Docker your preferred way
 
 #### Windows Specific Setup
-1. Install WSL2 in PowerShell with `wsl --install`
-2. Open up `Ubuntu` after a restart
+> Make sure your Nvidia drivers are up to date: https://www.nvidia.com/download/index.aspx
+1. Install WSL2 in PowerShell with `wsl --install` and restart
+2. Open PowerShell, type and enter ```ubuntu```.  It should now load you into wsl2
 3. Remove the original nvidia cache key: `sudo apt-key del 7fa2af80`
 4. Download CUDA toolkit keyring: `wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb`
 5. Install keyring: `sudo dpkg -i cuda-keyring_1.1-1_all.deb`
@@ -59,6 +60,7 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 8. Install Docker Desktop using WSL2 as the backend
 9. Restart
 10. If you wish to monitor the terminal remotely via SSH, follow [this guide](https://www.hanselman.com/blog/how-to-ssh-into-wsl2-on-windows-10-from-an-external-machine).
+11. Open PowerShell, type ```ubuntu```, [then follow below](#building-and-running-in-docker)
 
 #### Building and Running in Docker
 1. Open a terminal (or Ubuntu WSL)
@@ -67,10 +69,11 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 4. Start the container with `./start-docker.sh`
 5. Visit `http://localhost:7860` or remotely with `http://<ip>:7860`
 
-
 ## Instructions
 Checkout the YouTube video:
-Watch First: https://www.youtube.com/watch?v=p31Ax_A5VKA&t=158s
+
+Watch First: https://youtu.be/WWhNqJEmF9M?si=RhUZhYersAvSZ4wf
+
 Watch Second (RVC update): https://www.youtube.com/watch?v=7tpWH8_S8es&t=504s
 
 Everything is pretty much the same as before if you've used this repository in the past, however, there is a new option to convert text output using ```rvc```.  Before you can use it, you will need a **trained** RVC .pth file that you get from RVC or online, and then you will need to place it in ```models/rvc_models/```.  Both .index and .pth files can be placed in here and they'll show up correctly in their respective dropdown menus.
