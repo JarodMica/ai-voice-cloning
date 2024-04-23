@@ -17,10 +17,10 @@ This is a fork of the repo originally located here: https://git.ecker.tech/mrq/a
 ## Setup
 This repo works on **Windows with NVIDIA GPUs** and **Linux running Docker with NVIDIA GPUs**. 
 
-### Windows
+### Windows Package (Recommended)
 1. Optional, but recommended: Install 7zip on your computer: https://www.7-zip.org/
     - If you run into any extraction issues, most likely it's due to your 7zip being out-of-date OR you're using a different extractor.
-2. Head over to the releases tab and download the latest package on Hugging Face: https://github.com/JarodMica/ai-voice-cloning/releases/tag/v2.0
+2. Head over to the releases tab and download the latest package on Hugging Face: https://github.com/JarodMica/ai-voice-cloning/releases/tag/v3.0
 3. Extract the 7zip archive.
 4. Open up ai-voice-cloning and then run ```start.bat```
 
