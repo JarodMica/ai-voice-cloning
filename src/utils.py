@@ -2299,7 +2299,7 @@ def transcribe_dataset( voice, language=None, skip_existings=False, progress=Non
 	results = {}
 
 	files = get_voice(voice, load_latents=False)
-	indir = f'./training/{voice}/'
+	indir = f'./training/{voice}'
 	infile = f'{indir}/whisper.json'
 
 	quantize_in_memory = args.tts_backend == "vall-e"
@@ -2390,7 +2390,7 @@ def slice_waveform( waveform, sample_rate, start, end, trim ):
 	return sliced, error
 
 def slice_dataset( voice, trim_silence=True, start_offset=0, end_offset=0, results=None, progress=gr.Progress() ):
-	indir = f'./training/{voice}/'
+	indir = f'./training/{voice}'
 	infile = f'{indir}/whisper.json'
 	messages = []
 
@@ -2558,7 +2558,7 @@ def should_phonemize():
 	return should
 
 def prepare_dataset( voice, use_segments=False, text_length=0, audio_length=0, progress=gr.Progress() ):
-	indir = f'./training/{voice}/'
+	indir = f'./training/{voice}'
 	infile = f'{indir}/whisper.json'
 	if not os.path.exists(infile):
 		message = f"Missing dataset: {infile}"
