@@ -4,6 +4,7 @@ docker run \
     -ti \
     --rm \
     --gpus all \
+    --ipc=host
     --name ai-voice-cloning \
     -v "${PWD}/models:/home/user/ai-voice-cloning/models" \
     -v "${PWD}/training:/home/user/ai-voice-cloning/training" \
