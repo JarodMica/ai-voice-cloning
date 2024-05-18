@@ -49,7 +49,7 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 2. Install Docker your preferred way. One way to do it is to follow the official documentation [here](https://docs.docker.com/engine/install/ubuntu/#uninstall-old-versions).
     - Start by uninstalling the old versions
     - Follow the "apt" repository installation method
-    - Check that everything is workingwith the "hello-world" container
+    - Check that everything is working with the "hello-world" container
 
 3. If, when launching the voice cloning docker, you have an error message saying that the GPU cannot be used, you might have to install [Nvidia Docker Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
     - Install with the "apt" method
