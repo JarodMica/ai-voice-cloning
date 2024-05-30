@@ -19,7 +19,7 @@ call .\venv\Scripts\activate.bat
 
 :: Upgrade pip and install required packages
 python -m pip install --upgrade pip
-python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install torch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1 --index-url https://download.pytorch.org/whl/cu121
 python -m pip install -r .\modules\tortoise-tts\requirements.txt
 python -m pip install -e .\modules\tortoise-tts\
 python -m pip install -r .\modules\dlas\requirements.txt

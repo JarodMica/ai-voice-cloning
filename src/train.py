@@ -45,6 +45,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.yaml = " ".join(args.yaml) # absolutely disgusting
     config_path = args.yaml
+    # config_path = "training/jp_test_tokenizer/train.yaml"
 
     with open(config_path, 'r') as file:
         opt_config = yaml.safe_load(file)

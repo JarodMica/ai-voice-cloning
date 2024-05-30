@@ -1310,7 +1310,19 @@ def generate_tortoise(**kwargs):
 		else:
 			name = get_name(candidate=candidate)
 			audio_cache[name]['output'] = True
+   
+	for name in audio_cache:
+			if 'output' not in audio_cache[name] or not audio_cache[name]['output']:
+				if args.prune_nonfinal_outputs:
+					audio_cache[name]['pruned'] = True
+					os.remove(f'{outdir}/{cleanup_voice_name(voice)}_{name}.wav')
+				continue
 
+			output_voices.append(f'{outdir}/{cleanup_voice_name(voice)}_{name}.wav')
+
+			if not args.embed_output_metadata:
+				with open(f'{outdir}/{cleanup_voice_name(voice)}_{name}.json', 'w', encoding="utf-8") as f:
+					f.write(json.dumps(audio_cache[name]['settings'], indent='\t') )
 
 	if args.voice_fixer:
 		if not voicefixer:
@@ -1324,39 +1336,29 @@ def generate_tortoise(**kwargs):
 				if 'output' not in audio_cache[name] or not audio_cache[name]['output']:
 					continue
 
-				path = f'{outdir}/{cleanup_voice_name(voice)}_{name}.wav'
-				fixed = f'{outdir}/{cleanup_voice_name(voice)}_{name}_fixed.wav'
+				# path = f'{outdir}/{cleanup_voice_name(voice)}_{name}.wav'
+				# fixed = f'{outdir}/{cleanup_voice_name(voice)}_{name}_fixed.wav'
+				audio_path = output_voices[0]
 				voicefixer.restore(
-					input=path,
-					output=fixed,
+					input=audio_path,
+					output=audio_path,
 					cuda=get_device_name() == "cuda" and args.voice_fixer_use_cuda,
 					#mode=mode,
 				)
-				
-				fixed_cache[f'{name}_fixed'] = {
-					'settings': audio_cache[name]['settings'],
-					'output': True
-				}
-				audio_cache[name]['output'] = False
+				#Just commented everything out as a quick fix for voicefixer
+			# 	fixed_cache[f'{name}_fixed'] = {
+			# 		'settings': audio_cache[name]['settings'],
+			# 		'output': True
+			# 	}
+			# 	audio_cache[name]['output'] = False
 			
-			for name in fixed_cache:
-				audio_cache[name] = fixed_cache[name]
+			# for name in fixed_cache:
+			# 	audio_cache[name] = fixed_cache[name]
 		except Exception as e:
 			print(e)
 			print("\nFailed to run Voicefixer")
 
-	for name in audio_cache:
-		if 'output' not in audio_cache[name] or not audio_cache[name]['output']:
-			if args.prune_nonfinal_outputs:
-				audio_cache[name]['pruned'] = True
-				os.remove(f'{outdir}/{cleanup_voice_name(voice)}_{name}.wav')
-			continue
-
-		output_voices.append(f'{outdir}/{cleanup_voice_name(voice)}_{name}.wav')
-
-		if not args.embed_output_metadata:
-			with open(f'{outdir}/{cleanup_voice_name(voice)}_{name}.json', 'w', encoding="utf-8") as f:
-				f.write(json.dumps(audio_cache[name]['settings'], indent='\t') )
+	
 
 	if args.embed_output_metadata:
 		for name in tqdm(audio_cache, desc="Embedding metadata..."):

@@ -343,6 +343,9 @@ def transcribe_other_language_proxy(voice, language, chunk_size, continuation_di
     from modules.tortoise_dataset_tools.audio_conversion_tools.split_long_file import get_duration, process_folder
     chosen_directory = os.path.join("./voices", voice)
     items = os.listdir(chosen_directory)
+    
+    # This is to prevent an error below when processing "non audio" files.  This will occur with other types, but .pth should
+    # be the only other ones in the voices folder.
     for file in items:
         if file.endswith(".pth"):
             items.remove(file)
@@ -668,7 +671,7 @@ def setup_gradio():
                                       type="value", value="Ultra Fast", visible=args.tts_backend == "tortoise")
 
                     GENERATE_SETTINGS["num_autoregressive_samples"] = gr.Slider(
-                        value=16, minimum=2, maximum=2048 if args.tts_backend == "vall-e" else 512, step=1, label="Samples", visible=args.tts_backend != "bark")
+                        value=16, minimum=1, maximum=2048 if args.tts_backend == "vall-e" else 512, step=1, label="Samples", visible=args.tts_backend != "bark")
                     GENERATE_SETTINGS["diffusion_iterations"] = gr.Slider(
                         value=30, minimum=0, maximum=512, step=1, label="Iterations", visible=args.tts_backend == "tortoise")
 
@@ -952,6 +955,8 @@ def setup_gradio():
                                 label="Worker Processes", value=2, precision=0, visible=args.tts_backend == "tortoise")
                             TRAINING_SETTINGS["gpus"] = gr.Number(
                                 label="GPUs", value=get_device_count(), precision=0)
+                            TRAINING_SETTINGS["num_text_tokens"] = gr.Number(
+                                label="Number of Text Tokens", value=256, precision=0)
 
                         TRAINING_SETTINGS["source_model"] = gr.Dropdown(
                             choices=autoregressive_models, label="Source Model", type="value", value=autoregressive_models[0], visible=args.tts_backend == "tortoise")

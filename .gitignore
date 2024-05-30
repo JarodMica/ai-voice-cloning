@@ -13,6 +13,10 @@ pyfastmp3decoder/
 onnx_test_stuff/
 *.whl
 *.exe
+*.7z
+/ffmpeg/
+/personal_testing/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
