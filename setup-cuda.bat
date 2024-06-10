@@ -11,7 +11,7 @@ if errorlevel 1 (
 
 :: Initialize and update git submodules
 git submodule init
-git submodule update --remote
+git submodule update
 
 :: Set up virtual environment with Python 3.11
 py -3.11 -m venv venv
