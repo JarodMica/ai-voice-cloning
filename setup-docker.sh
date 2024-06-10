@@ -3,7 +3,7 @@
 function main() {
     if [ ! -f modules/tortoise-tts/README.md ]; then
         git submodule init
-        git submodule update --remote
+        git submodule update
     fi
     docker build \
         --build-arg UID=$(id -u) \
