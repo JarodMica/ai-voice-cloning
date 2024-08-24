@@ -4028,6 +4028,7 @@ def load_whisper_model(language=None, model_name=None, progress=None):
 		whisper_align_model = whisperx.load_align_model(model_name="WAV2VEC2_ASR_LARGE_LV60K_960H" if language=="en" else None, language_code=language, device=device)
 
 	print("Loaded Whisper model")
+	return whisper_model
 
 def unload_whisper():
 	global whisper_model

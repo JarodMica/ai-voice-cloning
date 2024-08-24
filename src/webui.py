@@ -314,7 +314,9 @@ def prepare_dataset_proxy(voice, language, validation_text_length, validation_au
     return "\n".join(messages)
 
 
-def transcribe_other_language_proxy(voice, language, chunk_size, continuation_directory, align, rename, num_processes, keep_originals, progress=gr.Progress(track_tqdm=True)):
+def transcribe_other_language_proxy(voice, language, chunk_size, continuation_directory, align, rename, num_processes, keep_originals, 
+                                    srt_multiprocessing, ext, speaker_id, progress=gr.Progress(track_tqdm=True)):
+    whisper_model = load_whisper_model(language=language)
     num_processes = int(num_processes)
     training_folder = get_training_folder(voice)
     processed_folder = os.path.join(training_folder,"processed")
@@ -369,33 +371,35 @@ def transcribe_other_language_proxy(voice, language, chunk_size, continuation_di
             pass
             
     progress(0.0, desc="Converting to MP3 files") # add tqdm later
-    import modules.tortoise_dataset_tools.audio_conversion_tools.convert_to_mp3 as c2mp3
     
-    # Hacky way to get the functions working without changing where they output to...
-    for item in os.listdir(chosen_directory):
-        if os.path.isfile(os.path.join(chosen_directory, item)):
-            original_dir = os.path.join(chosen_directory, "original_files")
-            if not os.path.exists(original_dir):
-                os.makedirs(original_dir)
-            item_path = os.path.join(chosen_directory, item)
-            try:
-                shutil.move(item_path, original_dir)
-            except:
-                os.remove(item_path)
-    
-    try:
-        c2mp3.process_folder(original_dir, large_file_num_processes)
-    except:
-        raise gr.Error('No files found in the voice folder specified, make sure it is not empty.  If you interrupted the process, the files may be in the "original_files" folder')
-    
-    # Hacky way to move the files back into the main voice folder
-    for item in os.listdir(os.path.join(original_dir, "converted")):
-        item_path = os.path.join(original_dir, "converted", item)
-        if os.path.isfile(item_path):
-            try:
-                shutil.move(item_path, chosen_directory)
-            except:
-                os.remove(item_path)
+    if ext=="mp3":
+        import modules.tortoise_dataset_tools.audio_conversion_tools.convert_to_mp3 as c2mp3
+        
+        # Hacky way to get the functions working without changing where they output to...
+        for item in os.listdir(chosen_directory):
+            if os.path.isfile(os.path.join(chosen_directory, item)):
+                original_dir = os.path.join(chosen_directory, "original_files")
+                if not os.path.exists(original_dir):
+                    os.makedirs(original_dir)
+                item_path = os.path.join(chosen_directory, item)
+                try:
+                    shutil.move(item_path, original_dir)
+                except:
+                    os.remove(item_path)
+        
+        try:
+            c2mp3.process_folder(original_dir, large_file_num_processes)
+        except:
+            raise gr.Error('No files found in the voice folder specified, make sure it is not empty.  If you interrupted the process, the files may be in the "original_files" folder')
+        
+        # Hacky way to move the files back into the main voice folder
+        for item in os.listdir(os.path.join(original_dir, "converted")):
+            item_path = os.path.join(original_dir, "converted", item)
+            if os.path.isfile(item_path):
+                try:
+                    shutil.move(item_path, chosen_directory)
+                except:
+                    os.remove(item_path)
             
     if not keep_originals:
         originals_files = os.path.join(chosen_directory, "original_files")
@@ -412,7 +416,13 @@ def transcribe_other_language_proxy(voice, language, chunk_size, continuation_di
                         chunk_size=chunk_size,
                         no_align=align,
                         rename_files=rename,
-                        num_processes=num_processes)
+                        num_processes=num_processes,
+                        whisper_model=whisper_model,
+                        srt_multiprocessing=srt_multiprocessing,
+                        ext=ext,
+                        speaker_id=speaker_id,
+                        sr_rate
+                        )
     progress(0.7, desc="Audio processing completed")
 
     progress(0.7, desc="Merging segments")
@@ -875,9 +885,11 @@ def setup_gradio():
                             DATASET2_SETTINGS['chunk_size'] = gr.Textbox(
                                 label="Chunk Size", value="15")
                             DATASET2_SETTINGS['num_processes'] = gr.Textbox(
-                                label="Processes to Use", value=int(max(1, multiprocessing.cpu_count())))
+                                label="Processes to Use", value=int(max(1, multiprocessing.cpu_count())-2))
                             
                         with gr.Row():
+                            EXEC_SETTINGS['whisper_model'] = gr.Dropdown(
+                                WHISPER_MODELS, label="Whisperx Model", value=args.whisper_model)
                             DATASET2_SETTINGS['align'] = gr.Checkbox(
                                 label="Disable WhisperX Alignment", value=False   
                             )
@@ -886,6 +898,19 @@ def setup_gradio():
                             )
                             DATASET2_SETTINGS['keep_originals'] = gr.Checkbox(
                                 label="Keep Original Files", value=True
+                            )
+
+                        advanced_toggle = gr.Button(value="Show Advanced Settings")
+
+                        with gr.Row(visible=False) as advanced_settings_row:
+                            DATASET2_SETTINGS["srt_multiprocessing"] = gr.Checkbox(
+                                label="Disable for Files < 20s", value=True
+                            )
+                            DATASET2_SETTINGS["ext"] = gr.Dropdown(
+                                label="Audio Extension", value="mp3", choices=["wav", "mp3"]
+                            )
+                            DATASET2_SETTINGS["speaker_id"] = gr.Checkbox(
+                                label="Speaker ID", value=False
                             )
                         transcribe2_button = gr.Button(
                             value="Transcribe and Process")
@@ -1397,7 +1422,10 @@ def setup_gradio():
                 DATASET2_SETTINGS["align"],
                 DATASET2_SETTINGS["rename"],
                 DATASET2_SETTINGS['num_processes'],
-                DATASET2_SETTINGS['keep_originals']
+                DATASET2_SETTINGS['keep_originals'],
+                DATASET2_SETTINGS["srt_multiprocessing"],
+                DATASET2_SETTINGS['ext'],
+                DATASET2_SETTINGS['speaker_id']
             ],
             outputs=transcribe2_output
         )
@@ -1416,6 +1444,19 @@ def setup_gradio():
                 DATASET2_SETTINGS['language']
             ],
             outputs=transcribe2_output
+        )
+        # Function to toggle advanced settings visibility
+        def toggle_advanced_settings(show):
+            if show == "Show Advanced Settings":
+                return gr.update(value="Hide Advanced Settings"), gr.update(visible=True)
+            else:
+                return gr.update(value="Show Advanced Settings"), gr.update(visible=False)
+
+        # Connect the toggle button to the toggle function
+        advanced_toggle.click(
+            fn=toggle_advanced_settings,
+            inputs=[advanced_toggle],
+            outputs=[advanced_toggle, advanced_settings_row]
         )
 
         transcribe_all_button.click(

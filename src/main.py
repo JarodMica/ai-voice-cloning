@@ -1,5 +1,7 @@
 # Moved all of the imports into __name__ == "__main__" due to how multiprocessing spawns instances, makes multiprocessing faster as it reduces import overhead
 
+# Need to check hz of dataset prep
+
 if __name__ == "__main__":
 	import os
 	import sys

@@ -9,6 +9,12 @@ AR Quantization
 - ggml - https://github.com/ggerganov/ggml/issues/59
 - TortoiseCPP https://github.com/balisujohn/tortoise.cpp
 
+## 8/24/2024
+Haven't done work here in awhile, with that being the case, I've forgotten quite a bit of the things that I was working on
+- The purpose of this repo was to explore the idea of expanding the embedding table for vocabulary in tortoise, this is very much possible and how I did it is in expand_tortoise.py
+- This branch removes the clvp model and allows for 1 sample inference (the updates are done in the tortoise repo not this one though)
+- Looking at the changes, added advanced settings inside of the webui
+
 ## 5/3/2024
 ### Oops
 - I've been training on the multilingual dataset for the past few days... and I forgot to convert the train.txt kanji into hiragana... oops.
