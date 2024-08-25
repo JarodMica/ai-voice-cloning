@@ -19,7 +19,6 @@ call .\venv\Scripts\activate.bat
 
 :: Upgrade pip and install required packages
 python -m pip install --upgrade pip
-python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 python -m pip install -r .\modules\tortoise-tts\requirements.txt
 python -m pip install -e .\modules\tortoise-tts\
 python -m pip install -r .\modules\dlas\requirements.txt
@@ -115,6 +114,9 @@ python -m pip install git+https://github.com/m-bain/whisperx.git
 
 :: Install other requirements (this is done last due to potential package conflicts)
 python -m pip install -r requirements.txt
+python -m pip uninstall torch
+python -m pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
+
 
 :: Download and install ffmpeg
 call download_ffmpeg.bat
