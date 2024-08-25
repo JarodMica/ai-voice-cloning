@@ -12,6 +12,6 @@ beartype==0.15.0
 pykakasi
 rotary-embedding-torch==0.4.0
 transformers==4.29.2
-omegaconf<=2.1
+omegaconf==2.3
 pysrt
 librosa==0.9.1

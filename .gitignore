@@ -1,4 +1,7 @@
 # ignores user files
+/ffmpeg/
+/personal_testing/
+*.7z
 /venv/
 /venv_cpu/
 /training/*
