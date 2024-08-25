@@ -122,6 +122,9 @@ def generate_proxy(
         voice_latents_original_diffusion,
         progress=gr.Progress(track_tqdm=True)
 ):
+    rvc_config_path = os.path.join("config", "rvc.json")
+    if not os.path.exists(rvc_config_path):
+        raise gr.Error("No RVC configurtation found, check configs folder.  If rvc.json does not exist, please change a setting in the RVC area to create one.")
     kwargs = locals()
 
     try:
@@ -1161,8 +1164,8 @@ def setup_gradio():
                         fn=update_args_proxy, inputs=exec_inputs)
 
                 rvc_inputs = list(RVC_SETTINGS.values())
-                # for k in RVC_SETTINGS:
-                # 	RVC_SETTINGS[k].change(fn=update_rvc_settings_proxy, inputs=rvc_inputs)
+                for k in RVC_SETTINGS:
+                    RVC_SETTINGS[k].change(fn=update_rvc_settings_proxy, inputs=rvc_inputs)
 
                 for k, component in RVC_SETTINGS.items():
                     if isinstance(component, gr.Dropdown):
