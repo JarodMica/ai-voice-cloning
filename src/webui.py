@@ -124,7 +124,7 @@ def generate_proxy(
 ):
     rvc_config_path = os.path.join("config", "rvc.json")
     if not os.path.exists(rvc_config_path):
-        raise gr.Error("No RVC configurtation found, check configs folder.  If rvc.json does not exist, please change a setting in the RVC area to create one.")
+        raise gr.Error("No RVC configuration found, check configs folder.  If rvc.json does not exist, please change a setting in the RVC area to create one.")
     kwargs = locals()
 
     try:
