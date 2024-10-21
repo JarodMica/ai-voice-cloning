@@ -1,0 +1,10 @@
+{
+	"rvc_model": "ram.pth",
+	"f0_up_key": 0,
+	"file_index": "added_IVF256_Flat_nprobe_1_rui48k_v2.index",
+	"index_rate": 0,
+	"filter_radius": 3,
+	"resample_sr": 48000,
+	"rms_mix_rate": 0.25,
+	"protect": 0.33
+}
