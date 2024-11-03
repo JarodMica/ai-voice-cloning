@@ -46,7 +46,21 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 
 #### Linux Specific Setup
 1. Make sure the latest nvidia drivers are installed: `sudo ubuntu-drivers install`
-2. Install Docker your preferred way
+2. Install Docker your preferred way. One way to do it is to follow the official documentation [here](https://docs.docker.com/engine/install/ubuntu/#uninstall-old-versions).
+    - Start by uninstalling the old versions
+    - Follow the "apt" repository installation method
+    - Check that everything is working with the "hello-world" container
+
+3. If, when launching the voice cloning docker, you have an error message saying that the GPU cannot be used, you might have to install [Nvidia Docker Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+    - Install with the "apt" method
+    - Run the docker configuration command
+
+        ```sudo nvidia-ctk runtime configure --runtime=docker```
+    
+    - Restart docker
+
+
+
 
 #### Windows Specific Setup
 > Make sure your Nvidia drivers are up to date: https://www.nvidia.com/download/index.aspx
@@ -63,11 +77,20 @@ git clone https://github.com/JarodMica/ai-voice-cloning.git
 11. Open PowerShell, type ```ubuntu```, [then follow below](#building-and-running-in-docker)
 
 #### Building and Running in Docker
+
 1. Open a terminal (or Ubuntu WSL)
 2. Clone the repository: `git clone https://github.com/JarodMica/ai-voice-cloning.git && cd ai-voice-cloning`
 3. Build the image with `./setup-docker.sh`
 4. Start the container with `./start-docker.sh`
 5. Visit `http://localhost:7860` or remotely with `http://<ip>:7860`
+
+>If remote server cannot be reached, checkout this [thread](https://github.com/JarodMica/ai-voice-cloning/issues/92)
+
+You might also need to remap your local folders to the Docker folders. To do this, you must open the "start-docker.sh" script, and update some lines. For instance, if you want to find your generated audios easily, create a "results" folder in the root directory, and then in "start-docker.sh" add the line:
+
+```-v "your/custom/path:/home/user/ai-voice-cloning/results"```
+
+
 
 ## Instructions
 Checkout the YouTube video:
