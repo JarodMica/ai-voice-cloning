@@ -1378,23 +1378,25 @@ def generate_tortoise(**kwargs):
 		rvc_model_path = os.path.join("models", "rvc_models", rvc_settings['rvc_model'])
 		rvc_index_path = os.path.join("models", "rvc_models", rvc_settings['file_index'])
 		print (rvc_model_path)
-		rvc_out_path = rvc_convert(model_path=rvc_model_path, 
-							 		input_path=output_voices[0],
-									f0_up_key=rvc_settings['f0_up_key'],
-									file_index=rvc_index_path,
-									index_rate=rvc_settings['index_rate'],
-									filter_radius=rvc_settings['filter_radius'],
-									resample_sr=rvc_settings['resample_sr'],
-									rms_mix_rate=rvc_settings['rms_mix_rate'],
-									protect=rvc_settings['protect'])
-		
-		# Read the contents from rvc_out_path
-		with open(rvc_out_path, 'rb') as file:
-			content = file.read()
 
-		# Write the contents to output_voices[0], effectively replacing its contents
-		with open(output_voices[0], 'wb') as file:
-			file.write(content)
+		for i, output_voice in enumerate(output_voices):
+			rvc_out_path = rvc_convert(model_path=rvc_model_path, 
+										input_path=output_voice,
+										f0_up_key=rvc_settings['f0_up_key'],
+										file_index=rvc_index_path,
+										index_rate=rvc_settings['index_rate'],
+										filter_radius=rvc_settings['filter_radius'],
+										resample_sr=rvc_settings['resample_sr'],
+										rms_mix_rate=rvc_settings['rms_mix_rate'],
+										protect=rvc_settings['protect'])
+			
+			# Read the contents from rvc_out_path
+			with open(rvc_out_path, 'rb') as file:
+				content = file.read()
+
+			# Write the contents to output_voices[0], effectively replacing its contents
+			with open(output_voice, 'wb') as file:
+				file.write(content)
 
 
 	print(f"Generation took {info['time']} seconds, saved to '{output_voices[0]}'\n")
