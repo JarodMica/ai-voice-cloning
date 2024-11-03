@@ -1,6 +1,6 @@
 {
-	"rvc_model": "",
-	"f0_up_key": 0,
+	"rvc_model": "azasu.pth",
+	"f0_up_key": 12,
 	"file_index": "",
 	"index_rate": 0,
 	"filter_radius": 3,
