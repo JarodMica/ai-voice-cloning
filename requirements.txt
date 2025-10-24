@@ -1,4 +1,4 @@
-openai-whisper
+openai-whisper==20240930
 more-itertools
 ffmpeg-python
 gradio==4.22.0

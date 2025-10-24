@@ -12,7 +12,7 @@ ARG RVC_REPO=https://huggingface.co/Jmica/rvc/resolve/main/rvc_lightweight.zip?d
 ARG FAIRSEQ_REPO=https://github.com/VarunGumma/fairseq
 ARG PYFASTMP3DECODER_REPO=https://github.com/neonbjb/pyfastmp3decoder.git
 ARG PIPELINE_REPO=https://github.com/JarodMica/rvc-tts-pipeline.git@lightweight#egg=rvc_tts_pipe
-ARG WHISPERX_REPO=https://github.com/m-bain/whisperx.git
+ARG WHISPERX_REPO=https://github.com/m-bain/whisperx.git@v3.2.0
 
 # TZ
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -25,6 +25,7 @@ RUN apt-get install -y \
     git \
     ffmpeg \
     p7zip-full \
+    unzip \
     gcc \
     g++ \
     nano
@@ -44,7 +45,17 @@ RUN apt-get install -y \
 	build-essential \
 	zlib1g-dev \
 	llvm \
-	xz-utils
+	xz-utils \
+	ninja-build
+	
+# AV Prereqs
+RUN apt-get install -y \
+	libavformat-dev \
+	libavcodec-dev \
+	libavdevice-dev \
+	libavutil-dev \
+	libswscale-dev \
+	libswresample-dev
 
 # User
 RUN groupadd --gid $GID user
@@ -64,8 +75,8 @@ RUN ln -sf $PYTHON3_BIN /usr/bin/python3
 USER user
 
 # Prereqs
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+RUN python3 -m pip install --upgrade pip && \
+	python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 # Base path
 RUN git clone $BASE_REPO
@@ -74,10 +85,10 @@ WORKDIR $HOME/ai-voice-cloning
 # Built in modules
 RUN git submodule init &&\
 	git submodule update --remote
-RUN python3 -m pip install -r ./modules/tortoise-tts/requirements.txt
-RUN python3 -m pip install -e ./modules/tortoise-tts/
-RUN python3 -m pip install -r ./modules/dlas/requirements.txt
-RUN python3 -m pip install -e ./modules/dlas/
+RUN python3 -m pip install -r ./modules/tortoise-tts/requirements.txt && \
+	python3 -m pip install -e ./modules/tortoise-tts/ && \
+	python3 -m pip install -r ./modules/dlas/requirements.txt && \
+	python3 -m pip install -e ./modules/dlas/
 
 # Stage other modules
 RUN curl -L $RVC_REPO -o rvc.zip && \
@@ -88,13 +99,13 @@ RUN git clone --recurse-submodules $PYFASTMP3DECODER_REPO && \
 	python3 -m pip wheel ./pyfastmp3decoder -w ./pyfastmp3decoder/wheels
 
 # Install dependencies
-RUN python3 -m pip install -r ./rvc/requirements.txt
-RUN python3 -m pip install ./fairseq/wheels/fairseq-*.whl
-RUN python3 -m pip install git+$PIPELINE_REPO
-RUN python3 -m pip install deepspeed
-RUN python3 -m pip install ./pyfastmp3decoder/wheels/pyfastmp3decoder-*.whl
-RUN python3 -m pip install git+$WHISPERX_REPO
-RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install -r ./rvc/requirements.txt && \
+	python3 -m pip install ./fairseq/wheels/fairseq-*.whl && \
+	python3 -m pip install git+$PIPELINE_REPO && \
+	python3 -m pip install deepspeed && \
+	python3 -m pip install ./pyfastmp3decoder/wheels/pyfastmp3decoder-*.whl && \
+	python3 -m pip install git+$WHISPERX_REPO && \
+	python3 -m pip install -r requirements.txt
 
 ENV IN_DOCKER=true
 ENV PYTHON_VERSION=$PYTHON_VERSION
