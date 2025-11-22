@@ -1,13 +1,17 @@
 #!/bin/bash
-
 function main() {
-    if [ ! -f modules/tortoise-tts/README.md ]; then
-        git submodule init
-        git submodule update
-    fi
+	uid=${uid:-"$(id -u)"}
+	gid=${gid:-"$(id -g)"}
+	if [ "$uid" = "0" ]; then # User is running docker as sudo
+		uid=1001
+	fi
+	if [ "$gid" = "0" ]; then # User is running docker as sudo
+		gid=1001
+	fi
+	
     docker build \
-        --build-arg UID=$(id -u) \
-        --build-arg GID=$(id -g) \
+        --build-arg UID=$uid \
+        --build-arg GID=$gid \
         -t ai-voice-cloning \
         .
 }
